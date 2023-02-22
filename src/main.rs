@@ -20,7 +20,7 @@ fn run() -> Result<(), Box<dyn Error>> {
     let mut buf: Vec<u8> = vec!();
     f.read_to_end(&mut buf)?;
 
-    dbg!(&buf[..13]);
+    // dbg!(&buf[..13]);
 
     let reader = Reader::new(buf);
     let song = Song::from_reader(&reader)?;

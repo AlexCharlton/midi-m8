@@ -62,6 +62,7 @@ pub struct Song {
     pub mixer_settings: MixerSettings,
     pub grooves: [Groove;32],
     pub song: SongSteps,
+    pub phrases: [Phrase;256]
 }
 
 impl fmt::Debug for Song {
@@ -76,6 +77,7 @@ impl fmt::Debug for Song {
             .field("key", &self.key)
             //.field("grooves", &self.grooves)
             .field("song", &self.song)
+            .field("phrases", &self.phrases[16]) // TODO
             .finish()
     }
 }
@@ -94,9 +96,11 @@ impl Song {
         reader.read_bytes(18);
         let mixer_settings = MixerSettings::from_reader(reader)?;
         // println!("{:x}", reader.pos());
-        let mut i = 0;
-        let grooves: [Groove; 32] = arr![Groove::from_reader(reader, {i += 1; i - 1})?; 32];
+        let mut i:u16 = 0;
+        let grooves: [Groove; 32] = arr![Groove::from_reader(reader, {i += 1; (i - 1) as u8})?; 32];
         let song = SongSteps::from_reader(reader)?;
+        i = 0;
+        let phrases: [Phrase; 256] = arr![Phrase::from_reader(reader, {i += 1; (i - 1) as u8})?; 256];
 
         Ok(Self{
             version,
@@ -110,6 +114,7 @@ impl Song {
             mixer_settings,
             grooves,
             song,
+            phrases,
         })
     }
 
@@ -241,4 +246,215 @@ impl fmt::Debug for SongSteps {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         write!(f, "Song\n\n{}", self.print_screen())
     }
+}
+
+#[derive(PartialEq)]
+pub struct Phrase {
+    number: u8,
+    steps: [Step; 16]
+}
+impl Phrase {
+    pub fn print_screen(&self) -> String {
+        (0..16).fold("   N   V  I  FX1   FX2   FX3  \n".to_string(),
+                     |s, row| s + &self.steps[row].print(row as u8) + "\n"
+        )
+    }
+
+    pub fn from_reader(reader: &Reader, number: u8) -> Result<Self> {
+        Ok(Self {
+            number,
+            steps: arr![Step::from_reader(reader)?; 16],
+        })
+    }
+}
+
+impl fmt::Debug for Phrase {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "Phrase {:02x}\n\n{}", self.number, self.print_screen())
+    }
+}
+
+#[derive(PartialEq, Debug)]
+pub struct Step {
+    note: Note,
+    velocity: u8,
+    instrument: u8,
+    fx1: FX,
+    fx2: FX,
+    fx3: FX,
+}
+impl Step {
+    pub fn print(&self, row: u8) -> String {
+        let velocity = if self.velocity == 255 { format!("--") }
+        else { format!("{:02x}", self.velocity)};
+        let instrument = if self.instrument == 255 { format!("--") }
+        else { format!("{:02x}", self.instrument)};
+        format!("{:02x} {} {} {} {} {} {}", row, self.note, velocity, instrument,
+                self.fx1, self.fx2, self.fx3)
+    }
+
+    pub fn from_reader(reader: &Reader) -> Result<Self> {
+        Ok(Self {
+            note: Note(reader.read()),
+            velocity: reader.read(),
+            instrument: reader.read(),
+            fx1: FX::from_reader(reader)?,
+            fx2: FX::from_reader(reader)?,
+            fx3: FX::from_reader(reader)?,
+        })
+    }
+}
+
+#[derive(PartialEq, Debug)]
+pub struct Note(u8);
+
+impl fmt::Display for Note {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        if self.0 == 255 {
+            write!(f, "---")
+        } else {
+            let oct = (self.0 / 12) + 1;
+            let n = match self.0 % 12 {
+                0 => "C-",
+                1 => "C#",
+                2 => "D-",
+                3 => "D#",
+                4 => "E-",
+                5 => "F-",
+                6 => "F#",
+                7 => "G-",
+                8 => "G#",
+                9 => "A-",
+                10 => "A#",
+                11 => "B-",
+                _ => panic!()
+            };
+            write!(f, "{}{:X}", n, oct)
+        }
+    }
+}
+
+#[derive(PartialEq, Debug)]
+pub struct FX {
+    command: FXCommand,
+    value: u8
+}
+impl FX {
+    pub fn from_reader(reader: &Reader) -> Result<Self> {
+        Ok(Self {
+            command: unsafe { std::mem::transmute(reader.read())},
+            value: reader.read(),
+        })
+    }
+}
+
+impl fmt::Display for FX {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        if self.command == FXCommand::NONE {
+            write!(f, "---00")
+        } else {
+            write!(f, "{:?}{:02x}", self.command, self.value)
+        }
+    }
+}
+
+#[repr(u8)]
+#[derive(PartialEq, Debug)]
+#[allow(dead_code)]
+enum FXCommand {
+    ARP =  0x00,
+    CHA =  0x01,
+    DEL =  0x02,
+    GRV =  0x03,
+    HOP =  0x04,
+    KIL =  0x05,
+    RAN =  0x06,
+    RET =  0x07,
+    REP =  0x08,
+    NTH =  0x09,
+    PSL =  0x0A,
+    PSN =  0x0B,
+    PVB =  0x0C,
+    PVX =  0x0D,
+    SCA =  0x0E,
+    SCG =  0x0F,
+    SED =  0x10,
+    SNG =  0x11,
+    TBL =  0x12,
+    THO =  0x13,
+    TIC =  0x14,
+    TPO =  0x15,
+    TSP =  0x16,
+    VMV =  0x17,
+    XCM =  0x18,
+    XCF =  0x19,
+    XCW =  0x1A,
+    XCR =  0x1B,
+    XDT =  0x1C,
+    XDF =  0x1D,
+    XDW =  0x1E,
+    XDR =  0x1F,
+    XRS =  0x20,
+    XRD =  0x21,
+    XRM =  0x22,
+    XRF =  0x23,
+    XRW =  0x24,
+    XRZ =  0x25,
+    VCH =  0x26,
+    VCD =  0x27,
+    VRE =  0x28,
+    VT1 =  0x29,
+    VT2 =  0x2A,
+    VT3 =  0x2B,
+    VT4 =  0x2C,
+    VT5 =  0x2D,
+    VT6 =  0x2E,
+    VT7 =  0x2F,
+    VT8 =  0x30,
+    DJF =  0x31,
+    IVO =  0x32,
+    ICH =  0x33,
+    IDE =  0x34,
+    IRE =  0x35,
+    IV2 =  0x36,
+    IC2 =  0x37,
+    ID2 =  0x38,
+    IR2 =  0x39,
+    USB =  0x3A,
+    I00 =  0x80,
+    I01 =  0x81,
+    I02 =  0x82,
+    I03 =  0x83,
+    I04 =  0x84,
+    I05 =  0x85,
+    I06 =  0x86,
+    I07 =  0x87,
+    I08 =  0x88,
+    I09 =  0x89,
+    I0A =  0x8A,
+    I0B =  0x8B,
+    I0C =  0x8C,
+    I0D =  0x8D,
+    I0E =  0x8E,
+    I8F =  0x8F,
+    I90 =  0x90,
+    I91 =  0x91,
+    I92 =  0x92,
+    I93 =  0x93,
+    I94 =  0x94,
+    I95 =  0x95,
+    I96 =  0x96,
+    I97 =  0x97,
+    I98 =  0x98,
+    I99 =  0x99,
+    I9A =  0x9A,
+    I9B =  0x9B,
+    I9C =  0x9C,
+    I9D =  0x9D,
+    I9E =  0x9E,
+    I9F =  0x9F,
+    IA0 =  0xA0,
+    IA1 =  0xA1,
+    IA2 =  0xA2,
+    NONE = 0xff
 }
