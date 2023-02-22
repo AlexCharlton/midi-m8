@@ -62,7 +62,10 @@ pub struct Song {
     pub mixer_settings: MixerSettings,
     pub grooves: [Groove;32],
     pub song: SongSteps,
-    pub phrases: [Phrase;256]
+    pub phrases: [Phrase;255],
+    pub chains: [Chain;255],
+    // pub tables: [Table;256],
+    // pub instruments: [Instrument;128],
 }
 
 impl fmt::Debug for Song {
@@ -70,13 +73,14 @@ impl fmt::Debug for Song {
         f.debug_struct("Song")
             .field("version", &self.version)
             .field("directory", &self.directory_to_str())
-            .field("transpose", &self.transpose)
-            .field("tempo", &self.tempo)
-            .field("quantize", &self.quantize)
             .field("name", &self.name_to_str())
+            .field("tempo", &self.tempo)
+            .field("transpose", &self.transpose)
+            .field("quantize", &self.quantize)
             .field("key", &self.key)
             //.field("grooves", &self.grooves)
             .field("song", &self.song)
+            .field("chains", &self.chains[0]) // TODO
             .field("phrases", &self.phrases[16]) // TODO
             .finish()
     }
@@ -100,7 +104,9 @@ impl Song {
         let grooves: [Groove; 32] = arr![Groove::from_reader(reader, {i += 1; (i - 1) as u8})?; 32];
         let song = SongSteps::from_reader(reader)?;
         i = 0;
-        let phrases: [Phrase; 256] = arr![Phrase::from_reader(reader, {i += 1; (i - 1) as u8})?; 256];
+        let phrases: [Phrase; 255] = arr![Phrase::from_reader(reader, {i += 1; (i - 1) as u8})?; 255];
+        i = 0;
+        let chains: [Chain; 255] = arr![Chain::from_reader(reader, {i += 1; (i - 1) as u8})?; 255];
 
         Ok(Self{
             version,
@@ -115,6 +121,7 @@ impl Song {
             grooves,
             song,
             phrases,
+            chains,
         })
     }
 
@@ -249,6 +256,54 @@ impl fmt::Debug for SongSteps {
 }
 
 #[derive(PartialEq)]
+pub struct Chain {
+    number: u8,
+    steps: [ChainStep; 16]
+}
+impl Chain {
+    pub fn print_screen(&self) -> String {
+        (0..16).fold("  PH TSP\n".to_string(),
+                     |s, row| s + &self.steps[row].print(row as u8) + "\n"
+        )
+    }
+
+    pub fn from_reader(reader: &Reader, number: u8) -> Result<Self> {
+        Ok(Self {
+            number,
+            steps: arr![ChainStep::from_reader(reader)?; 16],
+        })
+    }
+}
+
+impl fmt::Debug for Chain {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "Chain {:02x}\n\n{}", self.number, self.print_screen())
+    }
+}
+
+#[derive(PartialEq, Debug)]
+pub struct ChainStep {
+    phrase: u8,
+    transpose: u8,
+}
+impl ChainStep {
+    pub fn print(&self, row: u8) -> String {
+        if self.phrase == 255 {
+            format!("{:02x} -- 00", row)
+        } else {
+            format!("{:02x} {:02x} {:02x}", row, self.phrase, self.transpose)
+        }
+    }
+
+    pub fn from_reader(reader: &Reader) -> Result<Self> {
+        Ok(Self {
+            phrase: reader.read(),
+            transpose: reader.read(),
+        })
+    }
+}
+
+#[derive(PartialEq)]
 pub struct Phrase {
     number: u8,
     steps: [Step; 16]
@@ -342,7 +397,7 @@ pub struct FX {
 impl FX {
     pub fn from_reader(reader: &Reader) -> Result<Self> {
         Ok(Self {
-            command: unsafe { std::mem::transmute(reader.read())},
+            command: FXCommand::from_u8(reader.read()),
             value: reader.read(),
         })
     }
@@ -362,6 +417,7 @@ impl fmt::Display for FX {
 #[derive(PartialEq, Debug)]
 #[allow(dead_code)]
 enum FXCommand {
+    // Sequencer commands
     ARP =  0x00,
     CHA =  0x01,
     DEL =  0x02,
@@ -385,6 +441,7 @@ enum FXCommand {
     TIC =  0x14,
     TPO =  0x15,
     TSP =  0x16,
+    // FX + mixer commands
     VMV =  0x17,
     XCM =  0x18,
     XCF =  0x19,
@@ -421,6 +478,7 @@ enum FXCommand {
     ID2 =  0x38,
     IR2 =  0x39,
     USB =  0x3A,
+    // Instrument commands
     I00 =  0x80,
     I01 =  0x81,
     I02 =  0x82,
@@ -456,5 +514,11 @@ enum FXCommand {
     IA0 =  0xA0,
     IA1 =  0xA1,
     IA2 =  0xA2,
+    // No command
     NONE = 0xff
+}
+impl FXCommand  {
+    pub fn from_u8(u: u8) -> Self {
+        unsafe { std::mem::transmute(u)}
+    }
 }
