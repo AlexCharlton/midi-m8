@@ -18,34 +18,39 @@ impl std::error::Error for ParseError {}
 
 type Result<T> = std::result::Result<T, ParseError>;
 
-pub struct Reader {
+struct Reader {
     buffer: Vec<u8>,
     position: Rc<RefCell<usize>>
 }
 
+#[allow(dead_code)]
 impl Reader {
-    pub fn new(buffer: Vec<u8>) -> Self {
+    fn new(buffer: Vec<u8>) -> Self {
         Self {
             buffer, position: Rc::new(RefCell::new(0))
         }
     }
 
-    pub fn read(&self) -> u8 {
+    fn read(&self) -> u8 {
         let p: usize = *self.position.borrow();
         let b = self.buffer[p];
         *self.position.borrow_mut() += 1;
         b
     }
 
-    pub fn read_bytes(&self, n: usize) -> &[u8] {
+    fn read_bytes(&self, n: usize) -> &[u8] {
         let p: usize = *self.position.borrow();
         let bs = &self.buffer[p..p+n];
         *self.position.borrow_mut() += n;
         bs
     }
 
-    pub fn pos(&self) -> usize {
+    fn pos(&self) -> usize {
         *self.position.borrow()
+    }
+
+    fn set_pos(&self, n: usize) {
+        *self.position.borrow_mut() = n;
     }
 }
 
@@ -64,7 +69,7 @@ pub struct Song {
     pub song: SongSteps,
     pub phrases: [Phrase;255],
     pub chains: [Chain;255],
-    // pub tables: [Table;256],
+    pub tables: [Table;256],
     // pub instruments: [Instrument;128],
 }
 
@@ -80,16 +85,26 @@ impl fmt::Debug for Song {
             .field("key", &self.key)
             //.field("grooves", &self.grooves)
             .field("song", &self.song)
-            .field("chains", &self.chains[0]) // TODO
+            .field("chains", &self.chains[0])
             .field("phrases", &self.phrases[16]) // TODO
+            // .field("instruments", &self.instruments[0])
+            .field("tables", &self.tables[0])
             .finish()
     }
 }
 
 impl Song {
-    pub fn from_reader(reader: &Reader) -> Result<Self> {
+    pub fn read(reader: &mut impl std::io::Read) -> Result<Self> {
+        let mut buf: Vec<u8> = vec!();
+        reader.read_to_end(&mut buf).unwrap();
+        // TODO check that buffer is long enough
+        let reader = Reader::new(buf);
+        Self::from_reader(&reader)
+    }
+
+    fn from_reader(reader: &Reader) -> Result<Self> {
         let version = Version::from_reader(reader)?;
-        reader.read_bytes(2);
+        reader.read_bytes(2); // Skip
         let directory = reader.read_bytes(128);
         let transpose = reader.read() as i8;
         let tempo = LittleEndian::read_f32(reader.read_bytes(4));
@@ -97,9 +112,10 @@ impl Song {
         let name = reader.read_bytes(12);
         let midi_settings = MidiSettings::from_reader(reader)?;
         let key = reader.read();
-        reader.read_bytes(18);
+        reader.read_bytes(18); // Skip
         let mixer_settings = MixerSettings::from_reader(reader)?;
         // println!("{:x}", reader.pos());
+
         let mut i:u16 = 0;
         let grooves: [Groove; 32] = arr![Groove::from_reader(reader, {i += 1; (i - 1) as u8})?; 32];
         let song = SongSteps::from_reader(reader)?;
@@ -107,6 +123,12 @@ impl Song {
         let phrases: [Phrase; 255] = arr![Phrase::from_reader(reader, {i += 1; (i - 1) as u8})?; 255];
         i = 0;
         let chains: [Chain; 255] = arr![Chain::from_reader(reader, {i += 1; (i - 1) as u8})?; 255];
+        i = 0;
+        let tables: [Table; 256] = arr![Table::from_reader(reader, {i += 1; (i - 1) as u8})?; 256];
+        // i = 0;
+        // let instruments: [Instrument; 128] = arr![Instrument::from_reader(reader, {i += 1; (i - 1) as u8})?; 128];
+
+        reader.read_bytes(3); // Skip
 
         Ok(Self{
             version,
@@ -122,6 +144,7 @@ impl Song {
             song,
             phrases,
             chains,
+            tables
         })
     }
 
@@ -144,14 +167,20 @@ pub struct Version {
     pub patch: u8,
 }
 
-impl fmt::Debug for Version {
+impl fmt::Display for Version {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         write!(f, "{}.{}.{}", self.major, self.minor, self.patch)
     }
 }
 
+impl fmt::Debug for Version {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "{}", &self)
+    }
+}
+
 impl Version {
-    pub fn from_reader(reader: &Reader) -> Result<Self> {
+    fn from_reader(reader: &Reader) -> Result<Self> {
         let _version_string = reader.read_bytes(10);
         let lsb = reader.read();
         let msb = reader.read();
@@ -167,10 +196,10 @@ impl Version {
 
 #[derive(PartialEq, Debug)]
 pub struct MidiSettings {
-    bytes: [u8; 27] // TODO
+    pub bytes: [u8; 27] // TODO
 }
 impl MidiSettings {
-    pub fn from_reader(reader: &Reader) -> Result<Self> {
+    fn from_reader(reader: &Reader) -> Result<Self> {
         Ok(Self {
             bytes: reader.read_bytes(27).try_into().unwrap()
         })
@@ -180,10 +209,10 @@ impl MidiSettings {
 
 #[derive(PartialEq, Debug)]
 pub struct MixerSettings {
-    bytes: [u8; 32] // TODO
+    pub bytes: [u8; 32] // TODO
 }
 impl MixerSettings {
-    pub fn from_reader(reader: &Reader) -> Result<Self> {
+    fn from_reader(reader: &Reader) -> Result<Self> {
         Ok(Self {
             bytes: reader.read_bytes(32).try_into().unwrap()
         })
@@ -192,11 +221,11 @@ impl MixerSettings {
 
 #[derive(PartialEq)]
 pub struct Groove {
-    number: u8,
-    steps: [u8; 16]
+    pub number: u8,
+    pub steps: [u8; 16]
 }
 impl Groove {
-    pub fn from_reader(reader: &Reader, number: u8) -> Result<Self> {
+    fn from_reader(reader: &Reader, number: u8) -> Result<Self> {
         Ok(Self {
             number,
             steps: reader.read_bytes(16).try_into().unwrap()
@@ -209,17 +238,20 @@ impl Groove {
     }
 }
 
-impl fmt::Debug for Groove {
+impl fmt::Display for Groove {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         write!(f, "Groove {}:{:?}", self.number, self.active_steps())
     }
 }
-
-
+impl fmt::Debug for Groove {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "{}", &self)
+    }
+}
 
 #[derive(PartialEq)]
 pub struct SongSteps {
-    steps: [u8; 2048]
+    pub steps: [u8; 2048]
 }
 impl SongSteps {
     pub fn print_screen(&self) -> String {self.print_screen_from(0) }
@@ -242,23 +274,28 @@ impl SongSteps {
         )
     }
 
-    pub fn from_reader(reader: &Reader) -> Result<Self> {
+    fn from_reader(reader: &Reader) -> Result<Self> {
         Ok(Self {
             steps: reader.read_bytes(2048).try_into().unwrap()
         })
     }
 }
 
+impl fmt::Display for SongSteps {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "SONG\n\n{}", self.print_screen())
+    }
+}
 impl fmt::Debug for SongSteps {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(f, "Song\n\n{}", self.print_screen())
+        write!(f, "{}", &self)
     }
 }
 
 #[derive(PartialEq)]
 pub struct Chain {
-    number: u8,
-    steps: [ChainStep; 16]
+    pub number: u8,
+    pub steps: [ChainStep; 16]
 }
 impl Chain {
     pub fn print_screen(&self) -> String {
@@ -267,7 +304,7 @@ impl Chain {
         )
     }
 
-    pub fn from_reader(reader: &Reader, number: u8) -> Result<Self> {
+    fn from_reader(reader: &Reader, number: u8) -> Result<Self> {
         Ok(Self {
             number,
             steps: arr![ChainStep::from_reader(reader)?; 16],
@@ -275,16 +312,21 @@ impl Chain {
     }
 }
 
+impl fmt::Display for Chain {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "CHAIN {:02x}\n\n{}", self.number, self.print_screen())
+    }
+}
 impl fmt::Debug for Chain {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(f, "Chain {:02x}\n\n{}", self.number, self.print_screen())
+        write!(f, "{}", &self)
     }
 }
 
 #[derive(PartialEq, Debug)]
 pub struct ChainStep {
-    phrase: u8,
-    transpose: u8,
+    pub phrase: u8,
+    pub transpose: u8,
 }
 impl ChainStep {
     pub fn print(&self, row: u8) -> String {
@@ -295,7 +337,7 @@ impl ChainStep {
         }
     }
 
-    pub fn from_reader(reader: &Reader) -> Result<Self> {
+    fn from_reader(reader: &Reader) -> Result<Self> {
         Ok(Self {
             phrase: reader.read(),
             transpose: reader.read(),
@@ -305,8 +347,8 @@ impl ChainStep {
 
 #[derive(PartialEq)]
 pub struct Phrase {
-    number: u8,
-    steps: [Step; 16]
+    pub number: u8,
+    pub steps: [Step; 16]
 }
 impl Phrase {
     pub fn print_screen(&self) -> String {
@@ -315,7 +357,7 @@ impl Phrase {
         )
     }
 
-    pub fn from_reader(reader: &Reader, number: u8) -> Result<Self> {
+    fn from_reader(reader: &Reader, number: u8) -> Result<Self> {
         Ok(Self {
             number,
             steps: arr![Step::from_reader(reader)?; 16],
@@ -323,20 +365,25 @@ impl Phrase {
     }
 }
 
+impl fmt::Display for Phrase {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "PHRASE {:02x}\n\n{}", self.number, self.print_screen())
+    }
+}
 impl fmt::Debug for Phrase {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(f, "Phrase {:02x}\n\n{}", self.number, self.print_screen())
+        write!(f, "{}", &self)
     }
 }
 
 #[derive(PartialEq, Debug)]
 pub struct Step {
-    note: Note,
-    velocity: u8,
-    instrument: u8,
-    fx1: FX,
-    fx2: FX,
-    fx3: FX,
+    pub note: Note,
+    pub velocity: u8,
+    pub instrument: u8,
+    pub fx1: FX,
+    pub fx2: FX,
+    pub fx3: FX,
 }
 impl Step {
     pub fn print(&self, row: u8) -> String {
@@ -348,7 +395,7 @@ impl Step {
                 self.fx1, self.fx2, self.fx3)
     }
 
-    pub fn from_reader(reader: &Reader) -> Result<Self> {
+    fn from_reader(reader: &Reader) -> Result<Self> {
         Ok(Self {
             note: Note(reader.read()),
             velocity: reader.read(),
@@ -389,13 +436,75 @@ impl fmt::Display for Note {
     }
 }
 
+#[derive(PartialEq)]
+pub struct Table {
+    pub number: u8,
+    pub steps: [TableStep; 16]
+}
+impl Table {
+    pub fn print_screen(&self) -> String {
+        (0..16).fold("   N   V  FX1   FX2   FX3  \n".to_string(),
+                     |s, row| s + &self.steps[row].print(row as u8) + "\n"
+        )
+    }
+
+    fn from_reader(reader: &Reader, number: u8) -> Result<Self> {
+        Ok(Self {
+            number,
+            steps: arr![TableStep::from_reader(reader)?; 16],
+        })
+    }
+}
+
+impl fmt::Display for Table {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "TABLE {:02x}\n\n{}", self.number, self.print_screen())
+    }
+}
+impl fmt::Debug for Table {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "{}", &self)
+    }
+}
+
+
+#[derive(PartialEq, Debug)]
+pub struct TableStep {
+    pub transpose: u8,
+    pub velocity: u8,
+    pub fx1: FX,
+    pub fx2: FX,
+    pub fx3: FX,
+}
+impl TableStep {
+    pub fn print(&self, row: u8) -> String {
+        let transpose = if self.transpose == 255 { format!("--") }
+        else { format!("{:02x}", self.transpose)};
+        let velocity = if self.velocity == 255 { format!("--") }
+        else { format!("{:02x}", self.velocity)};
+        format!("{:02x} {} {} {} {} {}", row, transpose, velocity,
+                self.fx1, self.fx2, self.fx3)
+    }
+
+    fn from_reader(reader: &Reader) -> Result<Self> {
+        Ok(Self {
+            transpose: reader.read(),
+            velocity: reader.read(),
+            fx1: FX::from_reader(reader)?,
+            fx2: FX::from_reader(reader)?,
+            fx3: FX::from_reader(reader)?,
+        })
+    }
+}
+
+
 #[derive(PartialEq, Debug)]
 pub struct FX {
-    command: FXCommand,
-    value: u8
+    pub command: FXCommand,
+    pub value: u8
 }
 impl FX {
-    pub fn from_reader(reader: &Reader) -> Result<Self> {
+    fn from_reader(reader: &Reader) -> Result<Self> {
         Ok(Self {
             command: FXCommand::from_u8(reader.read()),
             value: reader.read(),
@@ -416,7 +525,7 @@ impl fmt::Display for FX {
 #[repr(u8)]
 #[derive(PartialEq, Debug)]
 #[allow(dead_code)]
-enum FXCommand {
+pub enum FXCommand {
     // Sequencer commands
     ARP =  0x00,
     CHA =  0x01,
@@ -518,7 +627,7 @@ enum FXCommand {
     NONE = 0xff
 }
 impl FXCommand  {
-    pub fn from_u8(u: u8) -> Self {
+    fn from_u8(u: u8) -> Self {
         unsafe { std::mem::transmute(u)}
     }
 }
