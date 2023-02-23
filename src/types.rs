@@ -45,6 +45,16 @@ impl Reader {
         bs
     }
 
+    fn read_bool(&self) -> bool {
+        self.read() == 1
+    }
+
+    fn read_string(&self, n: usize) -> String {
+        let b = self.read_bytes(n);
+        let end = b.iter().position(|&x| x == 0).unwrap_or(0);
+        std::str::from_utf8(&b[0..end]).expect("invalid utf-8 sequence in string").to_string()
+    }
+
     fn pos(&self) -> usize {
         *self.position.borrow()
     }
@@ -57,38 +67,44 @@ impl Reader {
 #[derive(PartialEq)]
 pub struct Song {
     pub version: Version,
-    pub directory: [u8;128],
-    pub transpose: i8,
+    pub directory: String,
+    pub transpose: u8,
     pub tempo: f32,
     pub quantize: u8,
-    pub name: [u8;12],
-    pub midi_settings: MidiSettings,
+    pub name: String,
     pub key: u8,
-    pub mixer_settings: MixerSettings,
-    pub grooves: [Groove;32],
+
     pub song: SongSteps,
     pub phrases: [Phrase;255],
     pub chains: [Chain;255],
+    pub instruments: [Instrument;128],
     pub tables: [Table;256],
-    // pub instruments: [Instrument;128],
+    pub grooves: [Groove;32],
+    pub scales: [Scale;16],
+
+    pub mixer_settings: MixerSettings,
+    pub effects_settings: EffectsSettings,
+    pub midi_settings: MidiSettings,
+    pub midi_mappings: [MidiMapping;128],
 }
 
 impl fmt::Debug for Song {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         f.debug_struct("Song")
             .field("version", &self.version)
-            .field("directory", &self.directory_to_str())
-            .field("name", &self.name_to_str())
+            .field("directory", &self.directory)
+            .field("name", &self.name)
             .field("tempo", &self.tempo)
             .field("transpose", &self.transpose)
             .field("quantize", &self.quantize)
             .field("key", &self.key)
-            //.field("grooves", &self.grooves)
             .field("song", &self.song)
             .field("chains", &self.chains[0])
             .field("phrases", &self.phrases[16]) // TODO
-            // .field("instruments", &self.instruments[0])
+            .field("instruments", &self.instruments[0])
             .field("tables", &self.tables[0])
+            //.field("grooves", &self.grooves[0])
+            // .field("scales", &self.scales)
             .finish()
     }
 }
@@ -105,11 +121,11 @@ impl Song {
     fn from_reader(reader: &Reader) -> Result<Self> {
         let version = Version::from_reader(reader)?;
         reader.read_bytes(2); // Skip
-        let directory = reader.read_bytes(128);
-        let transpose = reader.read() as i8;
+        let directory = reader.read_string(128);
+        let transpose = reader.read();
         let tempo = LittleEndian::read_f32(reader.read_bytes(4));
         let quantize = reader.read();
-        let name = reader.read_bytes(12);
+        let name = reader.read_string(12);
         let midi_settings = MidiSettings::from_reader(reader)?;
         let key = reader.read();
         reader.read_bytes(18); // Skip
@@ -125,18 +141,29 @@ impl Song {
         let chains: [Chain; 255] = arr![Chain::from_reader(reader, {i += 1; (i - 1) as u8})?; 255];
         i = 0;
         let tables: [Table; 256] = arr![Table::from_reader(reader, {i += 1; (i - 1) as u8})?; 256];
-        // i = 0;
-        // let instruments: [Instrument; 128] = arr![Instrument::from_reader(reader, {i += 1; (i - 1) as u8})?; 128];
+        i = 0;
+        let instruments: [Instrument; 128] = arr![Instrument::from_reader(reader, {i += 1; (i - 1) as u8}, version)?; 128];
 
         reader.read_bytes(3); // Skip
+        let effects_settings = EffectsSettings::from_reader(reader)?;
+        reader.set_pos(0x1A5FE);
+        let midi_mappings: [MidiMapping; 128] = arr![MidiMapping::from_reader(reader)?; 128];
+
+        i = 0;
+        let scales: [Scale; 16] = if version.at_least(2, 5) {
+            reader.set_pos(0x1AA7E);
+            arr![Scale::from_reader(reader, {i += 1; (i - 1) as u8})?; 16]
+        } else {
+            arr![{let mut s = Scale::default(); s.number = i as u8; i+=1; s}; 16]
+        };
 
         Ok(Self{
             version,
-            directory: directory.try_into().unwrap(),
+            directory,
             transpose,
             tempo,
             quantize,
-            name: name.try_into().unwrap(),
+            name,
             midi_settings,
             key,
             mixer_settings,
@@ -144,23 +171,16 @@ impl Song {
             song,
             phrases,
             chains,
-            tables
+            tables,
+            instruments,
+            scales,
+            effects_settings,
+            midi_mappings,
         })
     }
-
-    pub fn directory_to_str(&self) -> &str {
-        let end = self.directory.iter().position(|&x| x == 0).expect("expected end of directory name");
-        std::str::from_utf8(&self.directory[0..end]).expect("invalid utf-8 sequence in directory")
-    }
-
-    pub fn name_to_str(&self) -> &str {
-        let end = self.name.iter().position(|&x| x == 0).expect("expected end of song name");
-        std::str::from_utf8(&self.name[0..end]).expect("invalid utf-8 sequence in song name")
-    }
-
 }
 
-#[derive(PartialEq)]
+#[derive(PartialEq, Clone, Copy)]
 pub struct Version {
     pub major: u8,
     pub minor: u8,
@@ -191,61 +211,10 @@ impl Version {
             major, minor, patch
         })
     }
-}
 
-
-#[derive(PartialEq, Debug)]
-pub struct MidiSettings {
-    pub bytes: [u8; 27] // TODO
-}
-impl MidiSettings {
-    fn from_reader(reader: &Reader) -> Result<Self> {
-        Ok(Self {
-            bytes: reader.read_bytes(27).try_into().unwrap()
-        })
-    }
-}
-
-
-#[derive(PartialEq, Debug)]
-pub struct MixerSettings {
-    pub bytes: [u8; 32] // TODO
-}
-impl MixerSettings {
-    fn from_reader(reader: &Reader) -> Result<Self> {
-        Ok(Self {
-            bytes: reader.read_bytes(32).try_into().unwrap()
-        })
-    }
-}
-
-#[derive(PartialEq)]
-pub struct Groove {
-    pub number: u8,
-    pub steps: [u8; 16]
-}
-impl Groove {
-    fn from_reader(reader: &Reader, number: u8) -> Result<Self> {
-        Ok(Self {
-            number,
-            steps: reader.read_bytes(16).try_into().unwrap()
-        })
-    }
-
-    pub fn active_steps(&self) -> &[u8] {
-        let end = (&self.steps).iter().position(|&x| x == 255).unwrap_or(15);
-        &self.steps[0..end]
-    }
-}
-
-impl fmt::Display for Groove {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(f, "Groove {}:{:?}", self.number, self.active_steps())
-    }
-}
-impl fmt::Debug for Groove {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(f, "{}", &self)
+    fn at_least(&self, major: u8, minor: u8) -> bool {
+        self.major > major ||
+            (self.major == major && self.minor >= minor)
     }
 }
 
@@ -331,9 +300,9 @@ pub struct ChainStep {
 impl ChainStep {
     pub fn print(&self, row: u8) -> String {
         if self.phrase == 255 {
-            format!("{:02x} -- 00", row)
+            format!("{:x} -- 00", row)
         } else {
-            format!("{:02x} {:02x} {:02x}", row, self.phrase, self.transpose)
+            format!("{:x} {:02x} {:02x}", row, self.phrase, self.transpose)
         }
     }
 
@@ -352,7 +321,7 @@ pub struct Phrase {
 }
 impl Phrase {
     pub fn print_screen(&self) -> String {
-        (0..16).fold("   N   V  I  FX1   FX2   FX3  \n".to_string(),
+        (0..16).fold("  N   V  I  FX1   FX2   FX3  \n".to_string(),
                      |s, row| s + &self.steps[row].print(row as u8) + "\n"
         )
     }
@@ -391,7 +360,7 @@ impl Step {
         else { format!("{:02x}", self.velocity)};
         let instrument = if self.instrument == 255 { format!("--") }
         else { format!("{:02x}", self.instrument)};
-        format!("{:02x} {} {} {} {} {} {}", row, self.note, velocity, instrument,
+        format!("{:x} {} {} {} {} {} {}", row, self.note, velocity, instrument,
                 self.fx1, self.fx2, self.fx3)
     }
 
@@ -443,7 +412,7 @@ pub struct Table {
 }
 impl Table {
     pub fn print_screen(&self) -> String {
-        (0..16).fold("   N   V  FX1   FX2   FX3  \n".to_string(),
+        (0..16).fold("  N  V  FX1   FX2   FX3  \n".to_string(),
                      |s, row| s + &self.steps[row].print(row as u8) + "\n"
         )
     }
@@ -482,7 +451,7 @@ impl TableStep {
         else { format!("{:02x}", self.transpose)};
         let velocity = if self.velocity == 255 { format!("--") }
         else { format!("{:02x}", self.velocity)};
-        format!("{:02x} {} {} {} {} {}", row, transpose, velocity,
+        format!("{:x} {} {} {} {} {}", row, transpose, velocity,
                 self.fx1, self.fx2, self.fx3)
     }
 
@@ -629,5 +598,517 @@ pub enum FXCommand {
 impl FXCommand  {
     fn from_u8(u: u8) -> Self {
         unsafe { std::mem::transmute(u)}
+    }
+
+    #[allow(dead_code)]
+    fn to_ui(self) -> u8 {
+        unsafe { std::mem::transmute(self)}
+    }
+}
+
+#[derive(PartialEq, Debug)]
+pub enum Instrument {
+    WavSynth(WavSynth),
+    MacroSynth(MacroSynth),
+    Sampler(Sampler),
+    MIDIOut(MIDIOut),
+    FMSynth(FMSynth),
+    None,
+}
+impl Instrument {
+    fn from_reader(reader: &Reader, number: u8, version: Version) -> Result<Self> {
+        let start_pos = reader.pos();
+        let kind = reader.read();
+        let name = reader.read_string(12);
+        let transpose = reader.read_bool();
+        let table_tick = reader.read();
+        let (volume, pitch, fine_tune) = if kind != 3 {
+            (reader.read(), reader.read(), reader.read())
+        } else { (0, 0, 0) };
+
+        let finalize = || -> () { reader.set_pos(start_pos + 215); };
+
+        Ok(match kind {
+            0x00 => {
+                let shape = reader.read();
+                let size = reader.read();
+                let mult = reader.read();
+                let warp = reader.read();
+                let mirror = reader.read();
+                let synth_params = SynthParams::from_reader(reader, volume, pitch, fine_tune)?;
+                finalize();
+                Self::WavSynth(WavSynth {
+                    number,
+                    name,
+                    transpose,
+                    table_tick,
+                    synth_params,
+
+                    shape,
+                    size,
+                    mult,
+                    warp,
+                    mirror,
+                })
+            }
+            0x01 => {
+                let shape = reader.read();
+                let timbre = reader.read();
+                let color = reader.read();
+                let degrade = reader.read();
+                let redux = reader.read();
+                let synth_params = SynthParams::from_reader(reader, volume, pitch, fine_tune)?;
+                finalize();
+                Self::MacroSynth(MacroSynth {
+                    number,
+                    name,
+                    transpose,
+                    table_tick,
+                    synth_params,
+
+                    shape,
+                    timbre,
+                    color,
+                    degrade,
+                    redux,
+                })
+            }
+            0x02 => {
+                let play_mode = reader.read();
+                let slice = reader.read();
+                let start = reader.read();
+                let loop_start = reader.read();
+                let length = reader.read();
+                let degrade = reader.read();
+                let synth_params = SynthParams::from_reader(reader, volume, pitch, fine_tune)?;
+                reader.set_pos(start_pos + 0x57);
+                let sample_path = reader.read_string(128);
+                Self::Sampler(Sampler {
+                    number,
+                    name,
+                    transpose,
+                    table_tick,
+                    synth_params,
+
+                    sample_path,
+                    play_mode,
+                    slice,
+                    start,
+                    loop_start,
+                    length,
+                    degrade,
+                })
+            }
+            0x03 => {
+                let port = reader.read();
+                let channel = reader.read();
+                let bank_select = reader.read();
+                let program_change = reader.read();
+                reader.read_bytes(3); // discard
+                let custom_cc: [ControlChange; 8] = arr![ControlChange::from_reader(reader)?; 8];
+                Self::MIDIOut(MIDIOut {
+                    number,
+                    name,
+                    transpose,
+                    table_tick,
+
+                    port,
+                    channel,
+                    bank_select,
+                    program_change,
+                    custom_cc,
+                })
+            }
+            0x04 => {
+                let algo = reader.read();
+                let mut operators: [Operator; 4] = arr![Operator::default(); 4];
+                if version.at_least(1, 4) {
+                    for i in 0..4 {
+                        operators[i].shape = reader.read();
+                    }
+                }
+                for i in 0..4 {
+                    operators[i].ratio = reader.read();
+                    operators[i].ratio_fine = reader.read();
+                }
+                for i in 0..4 {
+                    operators[i].level = reader.read();
+                    operators[i].feedback = reader.read();
+                }
+                for i in 0..4 {
+                    operators[i].mod_a = reader.read();
+                }
+                for i in 0..4 {
+                    operators[i].mod_b = reader.read();
+                }
+                let mod1 = reader.read();
+                let mod2 = reader.read();
+                let mod3 = reader.read();
+                let mod4 = reader.read();
+                let synth_params = SynthParams::from_reader(reader, volume, pitch, fine_tune)?;
+                finalize();
+
+                Self::FMSynth(FMSynth {
+                    number,
+                    name,
+                    transpose,
+                    table_tick,
+                    synth_params,
+
+                    algo,
+                    operators,
+                    mod1,
+                    mod2,
+                    mod3,
+                    mod4,
+                })
+            }
+            0xFF => Self::None,
+            _ => panic!("Instrument type {} not supported", kind)
+        })
+    }
+}
+
+#[derive(PartialEq, Debug)]
+pub struct WavSynth {
+    pub number: u8,
+    pub name: String,
+    pub transpose: bool,
+    pub table_tick: u8,
+    pub synth_params: SynthParams,
+
+    pub shape: u8,
+    pub size: u8,
+    pub mult: u8,
+    pub warp: u8,
+    pub mirror: u8,
+}
+
+#[derive(PartialEq, Debug)]
+pub struct MacroSynth {
+    pub number: u8,
+    pub name: String,
+    pub transpose: bool,
+    pub table_tick: u8,
+    pub synth_params: SynthParams,
+
+    pub shape: u8,
+    pub timbre: u8,
+    pub color: u8,
+    pub degrade: u8,
+    pub redux: u8,
+}
+
+#[derive(PartialEq, Debug)]
+pub struct Sampler {
+    pub number: u8,
+    pub name: String,
+    pub transpose: bool,
+    pub table_tick: u8,
+    pub synth_params: SynthParams,
+
+    pub sample_path: String,
+    pub play_mode: u8,
+    pub slice: u8,
+    pub start: u8,
+    pub loop_start: u8,
+    pub length: u8,
+    pub degrade: u8,
+}
+
+#[derive(PartialEq, Debug)]
+pub struct FMSynth {
+    pub number: u8,
+    pub name: String,
+    pub transpose: bool,
+    pub table_tick: u8,
+    pub synth_params: SynthParams,
+
+    pub algo: u8,
+    pub operators: [Operator; 4],
+    pub mod1: u8,
+    pub mod2: u8,
+    pub mod3: u8,
+    pub mod4: u8,
+}
+
+#[derive(PartialEq, Debug)]
+pub struct MIDIOut {
+    pub number: u8,
+    pub name: String,
+    pub transpose: bool,
+    pub table_tick: u8,
+
+    pub port: u8,
+    pub channel: u8,
+    pub bank_select: u8,
+    pub program_change: u8,
+    pub custom_cc: [ControlChange; 8],
+}
+
+
+#[derive(PartialEq, Debug)]
+pub struct SynthParams {
+    pub volume: u8,
+    pub pitch: u8,
+    pub fine_tune: u8,
+
+    pub filter_type: u8,
+    pub filter_cutoff: u8,
+    pub filter_res: u8,
+
+    pub amp: u8,
+    pub limit: u8,
+
+    pub mixer_pan: u8,
+    pub mixer_dry: u8,
+    pub mixer_chorus: u8,
+    pub mixer_delay: u8,
+    pub mixer_reverb: u8,
+
+    pub envelopes: [Envelope; 2],
+    pub lfos: [LFO; 2],
+}
+impl SynthParams {
+    fn from_reader(reader: &Reader, volume: u8, pitch:u8, fine_tune: u8) -> Result<Self> {
+        Ok(Self {
+            volume,
+            pitch,
+            fine_tune,
+
+            filter_type: reader.read(),
+            filter_cutoff: reader.read(),
+            filter_res: reader.read(),
+
+            amp: reader.read(),
+            limit: reader.read(),
+
+            mixer_pan: reader.read(),
+            mixer_dry: reader.read(),
+            mixer_chorus: reader.read(),
+            mixer_delay: reader.read(),
+            mixer_reverb: reader.read(),
+
+            envelopes: arr![Envelope::from_reader(reader)?; 2],
+            lfos: arr![LFO::from_reader(reader)?; 2],
+        })
+    }
+}
+
+#[derive(PartialEq, Debug)]
+pub struct Envelope {
+    pub dest: u8,
+    pub amount: u8,
+    pub attack: u8,
+    pub hold: u8,
+    pub decay: u8,
+    pub retrigger: u8,
+}
+impl Envelope {
+    fn from_reader(reader: &Reader) -> Result<Self> {
+        Ok(Self {
+            dest: reader.read(),
+            amount: reader.read(),
+            attack: reader.read(),
+            hold: reader.read(),
+            decay: reader.read(),
+            retrigger: reader.read(),
+        })
+    }
+}
+
+
+#[derive(PartialEq, Debug)]
+pub struct LFO {
+    pub shape: u8,
+    pub dest: u8,
+    pub trigger_mode: u8,
+    pub freq: u8,
+    pub amount: u8,
+    pub retrigger: u8,
+}
+impl LFO {
+    fn from_reader(reader: &Reader) -> Result<Self> {
+        Ok(Self {
+            shape: reader.read(),
+            dest: reader.read(),
+            trigger_mode: reader.read(),
+            freq: reader.read(),
+            amount: reader.read(),
+            retrigger: reader.read(),
+        })
+    }
+}
+
+#[derive(PartialEq, Debug, Default)]
+pub struct Operator {
+    pub shape: u8,
+    pub ratio: u8,
+    pub ratio_fine: u8,
+    pub level: u8,
+    pub feedback: u8,
+    pub retrigger: u8,
+    pub mod_a: u8,
+    pub mod_b: u8,
+}
+
+#[derive(PartialEq, Debug)]
+pub struct ControlChange {
+    pub number: u8,
+    pub default_value: u8,
+}
+impl ControlChange {
+    fn from_reader(reader: &Reader) -> Result<Self> {
+        Ok(Self{
+            number: reader.read(),
+            default_value: reader.read(),
+        })
+    }
+}
+
+
+#[derive(PartialEq)]
+pub struct Groove {
+    pub number: u8,
+    pub steps: [u8; 16]
+}
+impl Groove {
+    fn from_reader(reader: &Reader, number: u8) -> Result<Self> {
+        Ok(Self {
+            number,
+            steps: reader.read_bytes(16).try_into().unwrap()
+        })
+    }
+
+    pub fn active_steps(&self) -> &[u8] {
+        let end = (&self.steps).iter().position(|&x| x == 255).unwrap_or(15);
+        &self.steps[0..end]
+    }
+}
+
+impl fmt::Display for Groove {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "Groove {}:{:?}", self.number, self.active_steps())
+    }
+}
+impl fmt::Debug for Groove {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "{}", &self)
+    }
+}
+
+#[derive(PartialEq)]
+pub struct Scale {
+    pub number: u8,
+    pub name: String,
+    pub notes: [NoteOffset; 12] // Offsets for notes C-B
+}
+impl Scale {
+    fn from_reader(reader: &Reader, number: u8) -> Result<Self> {
+        let map = LittleEndian::read_u16(reader.read_bytes(2));
+        let mut notes = arr![NoteOffset::default(); 12];
+
+        for (i, note) in notes.iter_mut().enumerate() {
+            note.enabled = ((map >> i) & 0x1) == 1;
+            let offset = f32::from(reader.read()) + (f32::from(reader.read()) / 100.0);
+            note.semitones = offset;
+        }
+        let name = reader.read_string(16);
+        Ok(Self {
+            number,
+            name,
+            notes,
+        })
+    }
+
+    fn default() -> Self {
+        Self {
+            number: 0,
+            name: "CHROMATIC".to_string(),
+            notes: arr![NoteOffset::default(); 12]
+        }
+    }
+}
+
+impl fmt::Display for Scale {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        let notes = vec!["C ", "C#", "D ", "D#", "E ", "F ", "F#", "G ", "G#", "A ", "A#", "B "];
+        let offsets = self.notes.iter().zip(notes.iter()).map(|(offset, note)| -> String {
+            let s = if offset.enabled {
+                let sign = if offset.semitones < 0.0 { "-" } else { " " };
+                format!(" ON{}{:02.2}", sign, offset.semitones.abs())
+            } else {
+                " -- -- --".to_string()
+            };
+            note.to_string() + &s
+        }).collect::<Vec<String>>()
+            .join("\n");
+
+        write!(f, "Scale {}\nKEY   C\n\n   EN OFFSET\n{}\n\nNAME  {}",
+               self.number, offsets, &self.name)
+    }
+}
+impl fmt::Debug for Scale {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "{}", &self)
+    }
+}
+
+#[derive(PartialEq, Debug)]
+pub struct NoteOffset {
+    pub enabled: bool,
+    pub semitones: f32, // Semitones.cents: -24.0-24.0
+}
+impl NoteOffset {
+    fn default() -> Self {
+        Self { enabled: true, semitones: 0.0 }
+    }
+}
+
+#[derive(PartialEq, Debug)]
+pub struct MidiSettings {
+    pub bytes: [u8; 27] // TODO
+}
+impl MidiSettings {
+    fn from_reader(reader: &Reader) -> Result<Self> {
+        Ok(Self {
+            bytes: reader.read_bytes(27).try_into().unwrap()
+        })
+    }
+}
+
+#[derive(PartialEq, Debug)]
+pub struct MixerSettings {
+    pub bytes: [u8; 32] // TODO
+}
+impl MixerSettings {
+    fn from_reader(reader: &Reader) -> Result<Self> {
+        Ok(Self {
+            bytes: reader.read_bytes(32).try_into().unwrap()
+        })
+    }
+}
+
+#[derive(PartialEq, Debug)]
+pub struct EffectsSettings {
+    pub bytes: [u8; 22] // TODO
+}
+impl EffectsSettings {
+    fn from_reader(reader: &Reader) -> Result<Self> {
+        Ok(Self {
+            bytes: reader.read_bytes(22).try_into().unwrap()
+        })
+    }
+}
+
+#[derive(PartialEq, Debug)]
+pub struct MidiMapping {
+    pub bytes: [u8; 7] // TODO
+}
+impl MidiMapping {
+    fn from_reader(reader: &Reader) -> Result<Self> {
+        Ok(Self {
+            bytes: reader.read_bytes(7).try_into().unwrap()
+        })
     }
 }
