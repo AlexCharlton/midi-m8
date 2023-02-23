@@ -51,7 +51,7 @@ impl Reader {
 
     fn read_string(&self, n: usize) -> String {
         let b = self.read_bytes(n);
-        let end = b.iter().position(|&x| x == 0).unwrap_or(0);
+        let end = b.iter().position(|&x| x == 0 || x == 255).unwrap_or(0);
         std::str::from_utf8(&b[0..end]).expect("invalid utf-8 sequence in string").to_string()
     }
 
@@ -104,7 +104,7 @@ impl fmt::Debug for Song {
             .field("instruments", &self.instruments[0])
             .field("tables", &self.tables[0])
             //.field("grooves", &self.grooves[0])
-            // .field("scales", &self.scales)
+            //.field("scales", &self.scales)
             .finish()
     }
 }
@@ -1013,6 +1013,7 @@ impl Scale {
             let offset = f32::from(reader.read()) + (f32::from(reader.read()) / 100.0);
             note.semitones = offset;
         }
+
         let name = reader.read_string(16);
         Ok(Self {
             number,
