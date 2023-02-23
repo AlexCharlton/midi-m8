@@ -100,27 +100,40 @@ impl fmt::Debug for Song {
             .field("key", &self.key)
             .field("song", &self.song)
             .field("chains", &self.chains[0])
-            .field("phrases", &self.phrases[16]) // TODO
+            .field("phrases", &self.phrases[0])
             .field("instruments", &self.instruments[0])
             .field("tables", &self.tables[0])
             .field("grooves", &self.grooves[0])
             .field("scales", &self.scales[0])
+            .field("mixer_settings", &self.mixer_settings)
+            .field("effects_settings", &self.effects_settings)
+            .field("midi_settings", &self.midi_settings)
             .finish()
     }
 }
 
 impl Song {
+    const SIZE_PRIOR_TO_2_5: usize = 0x1A970;
+    const SIZE: usize = 0x1AD09;
+
     pub fn read(reader: &mut impl std::io::Read) -> Result<Self> {
         let mut buf: Vec<u8> = vec!();
         reader.read_to_end(&mut buf).unwrap();
-        // TODO check that buffer is long enough
+        let len = buf.len();
         let reader = Reader::new(buf);
-        Self::from_reader(&reader)
+
+        if len < Self::SIZE_PRIOR_TO_2_5 + Version::SIZE {
+            return Err(ParseError("File is not long enough to be a M8 song".to_string()));
+        }
+        let version = Version::from_reader(&reader)?;
+        if version.at_least(2, 5) && len < Self::SIZE + Version::SIZE {
+            return Err(ParseError("File is not long enough to be a M8 song".to_string()));
+        }
+
+        Self::from_reader(&reader, version)
     }
 
-    fn from_reader(reader: &Reader) -> Result<Self> {
-        let version = Version::from_reader(reader)?;
-        reader.read_bytes(2); // Skip
+    fn from_reader(reader: &Reader, version: Version) -> Result<Self> {
         let directory = reader.read_string(128);
         let transpose = reader.read();
         let tempo = LittleEndian::read_f32(reader.read_bytes(4));
@@ -200,6 +213,8 @@ impl fmt::Debug for Version {
 }
 
 impl Version {
+    const SIZE: usize = 14;
+
     fn from_reader(reader: &Reader) -> Result<Self> {
         let _version_string = reader.read_bytes(10);
         let lsb = reader.read();
@@ -207,6 +222,8 @@ impl Version {
         let major = msb & 0x0F;
         let minor = (lsb >> 4) & 0x0F;
         let patch = lsb & 0x0F;
+
+        reader.read_bytes(2); // Skip
         Ok(Self {
             major, minor, patch
         })
@@ -616,6 +633,21 @@ pub enum Instrument {
     None,
 }
 impl Instrument {
+    const SIZE: usize = 215;
+
+    pub fn read(reader: &mut impl std::io::Read) -> Result<Self> {
+        let mut buf: Vec<u8> = vec!();
+        reader.read_to_end(&mut buf).unwrap();
+        let len = buf.len();
+        let reader = Reader::new(buf);
+
+        if len < Self::SIZE + Version::SIZE {
+            return Err(ParseError("File is not long enough to be a M8 Instrument".to_string()));
+        }
+        let version = Version::from_reader(&reader)?;
+        Self::from_reader(&reader, 0, version)
+    }
+
     fn from_reader(reader: &Reader, number: u8, version: Version) -> Result<Self> {
         let start_pos = reader.pos();
         let kind = reader.read();
@@ -626,7 +658,7 @@ impl Instrument {
             (reader.read(), reader.read(), reader.read())
         } else { (0, 0, 0) };
 
-        let finalize = || -> () { reader.set_pos(start_pos + 215); };
+        let finalize = || -> () { reader.set_pos(start_pos + Self::SIZE); };
 
         Ok(match kind {
             0x00 => {
@@ -1004,6 +1036,22 @@ pub struct Scale {
     pub notes: [NoteOffset; 12] // Offsets for notes C-B
 }
 impl Scale {
+    const SIZE: usize = 32;
+
+    pub fn read(reader: &mut impl std::io::Read) -> Result<Self> {
+        let mut buf: Vec<u8> = vec!();
+        reader.read_to_end(&mut buf).unwrap();
+        let len = buf.len();
+        let reader = Reader::new(buf);
+
+        if len < Self::SIZE + Version::SIZE {
+            return Err(ParseError("File is not long enough to be a M8 Scale".to_string()));
+        }
+        Version::from_reader(&reader)?;
+        Self::from_reader(&reader, 0)
+    }
+
+
     fn from_reader(reader: &Reader, number: u8) -> Result<Self> {
         let map = LittleEndian::read_u16(reader.read_bytes(2));
         let mut notes = arr![NoteOffset::default(); 12];
@@ -1068,48 +1116,290 @@ impl NoteOffset {
 
 #[derive(PartialEq, Debug)]
 pub struct MidiSettings {
-    pub bytes: [u8; 27] // TODO
+    pub receive_sync: bool,
+    pub receive_transport: u8,
+    pub send_sync: bool,
+    pub send_transport: u8,
+    pub record_note_channel: u8,
+    pub record_note_velocity: bool,
+    pub record_note_delay_kill_commands: u8,
+    pub control_map_channel: u8,
+    pub song_row_cue_channel: u8,
+    pub track_input_channel: [u8; 8],
+    pub track_input_intrument: [u8; 8],
+    pub track_input_program_change: bool,
+    pub track_input_mode: u8,
 }
 impl MidiSettings {
     fn from_reader(reader: &Reader) -> Result<Self> {
         Ok(Self {
-            bytes: reader.read_bytes(27).try_into().unwrap()
+            receive_sync: reader.read_bool(),
+            receive_transport: reader.read(),
+            send_sync: reader.read_bool(),
+            send_transport: reader.read(),
+            record_note_channel: reader.read(),
+            record_note_velocity: reader.read_bool(),
+            record_note_delay_kill_commands: reader.read(),
+            control_map_channel: reader.read(),
+            song_row_cue_channel: reader.read(),
+            track_input_channel: reader.read_bytes(8).try_into().unwrap(),
+            track_input_intrument: reader.read_bytes(8).try_into().unwrap(),
+            track_input_program_change: reader.read_bool(),
+            track_input_mode: reader.read(),
         })
     }
 }
 
 #[derive(PartialEq, Debug)]
 pub struct MixerSettings {
-    pub bytes: [u8; 32] // TODO
+    pub master_volume: u8,
+    pub master_limit: u8,
+    pub track_volume: [u8; 8],
+    pub chorus_volume: u8,
+    pub delay_volume: u8,
+    pub reverb_volume: u8,
+    pub analog_input: AnalogInputSettings,
+    pub usb_input: InputMixerSettings,
+    pub dj_filter: u8,
+    pub dj_peak: u8,
 }
 impl MixerSettings {
     fn from_reader(reader: &Reader) -> Result<Self> {
+        let master_volume = reader.read();
+        let master_limit = reader.read();
+        let track_volume: [u8; 8] = reader.read_bytes(8).try_into().unwrap();
+        let chorus_volume = reader.read();
+        let delay_volume = reader.read();
+        let reverb_volume = reader.read();
+        let analog_input_volume = (reader.read(), reader.read());
+        let usb_input_volume = reader.read();
+        let analog_input_chorus = (reader.read(), reader.read());
+        let analog_input_delay = (reader.read(), reader.read());
+        let analog_input_reverb = (reader.read(), reader.read());
+        let usb_input_chorus = reader.read();
+        let usb_input_delay = reader.read();
+        let usb_input_reverb = reader.read();
+
+        let analog_input_l = InputMixerSettings {
+            volume: analog_input_volume.0,
+            chorus: analog_input_chorus.0,
+            delay: analog_input_delay.0,
+            reverb: analog_input_reverb.0,
+        };
+
+        let analog_input = if analog_input_volume.1 == 255 {
+            AnalogInputSettings::Stereo(analog_input_l)
+        } else {
+            let analog_input_r = InputMixerSettings {
+                volume: analog_input_volume.0,
+                chorus: analog_input_chorus.0,
+                delay: analog_input_delay.0,
+                reverb: analog_input_reverb.0,
+            };
+            AnalogInputSettings::DualMono((analog_input_l, analog_input_r))
+        };
+        let usb_input = InputMixerSettings {
+            volume: usb_input_volume,
+            chorus: usb_input_chorus,
+            delay: usb_input_delay,
+            reverb: usb_input_reverb,
+        };
+
+        let dj_filter = reader.read();
+        let dj_peak = reader.read();
+
+        reader.read_bytes(5); // discard
         Ok(Self {
-            bytes: reader.read_bytes(32).try_into().unwrap()
+            master_volume,
+            master_limit,
+            track_volume,
+            chorus_volume,
+            delay_volume,
+            reverb_volume,
+            analog_input,
+            usb_input,
+            dj_filter,
+            dj_peak,
         })
     }
 }
 
 #[derive(PartialEq, Debug)]
+pub struct InputMixerSettings {
+    pub volume: u8,
+    pub chorus: u8,
+    pub delay: u8,
+    pub reverb: u8,
+}
+
+#[derive(PartialEq, Debug)]
+pub enum AnalogInputSettings {
+    Stereo(InputMixerSettings),
+    DualMono((InputMixerSettings, InputMixerSettings)),
+}
+
+#[derive(PartialEq, Debug)]
 pub struct EffectsSettings {
-    pub bytes: [u8; 22] // TODO
+    pub chorus_mod_depth: u8,
+    pub chorus_mod_freq: u8,
+    pub chorus_reverb_send: u8,
+
+    pub delay_hp: u8,
+    pub delay_lp: u8,
+    pub delay_time_l: u8,
+    pub delay_time_r: u8,
+    pub delay_feedback: u8,
+    pub delay_width: u8,
+    pub delay_reverb_send: u8,
+
+    pub reverb_hp: u8,
+    pub reverb_lp: u8,
+    pub reverb_size: u8,
+    pub reverb_damping: u8,
+    pub reverb_mod_depth: u8,
+    pub reverb_mod_freq: u8,
+    pub reverb_width: u8,
 }
 impl EffectsSettings {
     fn from_reader(reader: &Reader) -> Result<Self> {
+        let chorus_mod_depth = reader.read();
+        let chorus_mod_freq = reader.read();
+        let chorus_reverb_send = reader.read();
+        reader.read_bytes(3); //unused
+
+        let delay_hp = reader.read();
+        let delay_lp = reader.read();
+        let delay_time_l = reader.read();
+        let delay_time_r = reader.read();
+        let delay_feedback = reader.read();
+        let delay_width = reader.read();
+        let delay_reverb_send = reader.read();
+        reader.read_bytes(1); //unused
+
+        let reverb_hp = reader.read();
+        let reverb_lp = reader.read();
+        let reverb_size = reader.read();
+        let reverb_damping = reader.read();
+        let reverb_mod_depth = reader.read();
+        let reverb_mod_freq = reader.read();
+        let reverb_width = reader.read();
+
         Ok(Self {
-            bytes: reader.read_bytes(22).try_into().unwrap()
+            chorus_mod_depth,
+            chorus_mod_freq,
+            chorus_reverb_send,
+
+            delay_hp,
+            delay_lp,
+            delay_time_l,
+            delay_time_r,
+            delay_feedback,
+            delay_width,
+            delay_reverb_send,
+
+            reverb_hp,
+            reverb_lp,
+            reverb_size,
+            reverb_damping,
+            reverb_mod_depth,
+            reverb_mod_freq,
+            reverb_width,
         })
     }
 }
 
 #[derive(PartialEq, Debug)]
 pub struct MidiMapping {
-    pub bytes: [u8; 7] // TODO
+    pub channel: u8,
+    pub control_number: u8,
+    pub value: u8,
+    pub typ: u8,
+    pub param_index: u8,
+    pub min_value: u8,
+    pub max_value: u8,
 }
 impl MidiMapping {
     fn from_reader(reader: &Reader) -> Result<Self> {
         Ok(Self {
-            bytes: reader.read_bytes(7).try_into().unwrap()
+            channel: reader.read(),
+            control_number: reader.read(),
+            value: reader.read(),
+            typ: reader.read(),
+            param_index: reader.read(),
+            min_value: reader.read(),
+            max_value: reader.read(),
+        })
+    }
+
+    pub fn empty(&self) -> bool {
+        self.channel == 0
+    }
+}
+
+#[derive(PartialEq, Debug)]
+pub struct Theme {
+    pub background: RGB,
+    pub text_empty: RGB,
+    pub text_info: RGB,
+    pub text_default: RGB,
+    pub text_value: RGB,
+    pub text_title: RGB,
+    pub play_marker: RGB,
+    pub cursor: RGB,
+    pub selection: RGB,
+    pub scope_slider: RGB,
+    pub meter_low: RGB,
+    pub meter_mid: RGB,
+    pub meter_peak: RGB,
+}
+impl Theme {
+    const SIZE: usize = 39;
+
+    pub fn read(reader: &mut impl std::io::Read) -> Result<Self> {
+        let mut buf: Vec<u8> = vec!();
+        reader.read_to_end(&mut buf).unwrap();
+        let len = buf.len();
+        let reader = Reader::new(buf);
+
+        if len < Self::SIZE + Version::SIZE {
+            return Err(ParseError("File is not long enough to be a M8 Theme".to_string()));
+        }
+        Version::from_reader(&reader)?;
+        Self::from_reader(&reader)
+    }
+
+
+    fn from_reader(reader: &Reader) -> Result<Self> {
+        Ok(Self {
+            background: RGB::from_reader(reader)?,
+            text_empty: RGB::from_reader(reader)?,
+            text_info: RGB::from_reader(reader)?,
+            text_default: RGB::from_reader(reader)?,
+            text_value: RGB::from_reader(reader)?,
+            text_title: RGB::from_reader(reader)?,
+            play_marker: RGB::from_reader(reader)?,
+            cursor: RGB::from_reader(reader)?,
+            selection: RGB::from_reader(reader)?,
+            scope_slider: RGB::from_reader(reader)?,
+            meter_low: RGB::from_reader(reader)?,
+            meter_mid: RGB::from_reader(reader)?,
+            meter_peak: RGB::from_reader(reader)?,
+        })
+    }
+}
+
+#[derive(PartialEq, Debug)]
+pub struct RGB {
+    pub r: u8,
+    pub g: u8,
+    pub b: u8,
+}
+impl RGB {
+    fn from_reader(reader: &Reader) -> Result<Self> {
+        Ok(Self {
+            r: reader.read(),
+            g: reader.read(),
+            b: reader.read(),
         })
     }
 }
