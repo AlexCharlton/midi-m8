@@ -103,8 +103,8 @@ impl fmt::Debug for Song {
             .field("phrases", &self.phrases[16]) // TODO
             .field("instruments", &self.instruments[0])
             .field("tables", &self.tables[0])
-            //.field("grooves", &self.grooves[0])
-            //.field("scales", &self.scales)
+            .field("grooves", &self.grooves[0])
+            .field("scales", &self.scales[0])
             .finish()
     }
 }
@@ -1033,7 +1033,7 @@ impl Scale {
 
 impl fmt::Display for Scale {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        let notes = vec!["C ", "C#", "D ", "D#", "E ", "F ", "F#", "G ", "G#", "A ", "A#", "B "];
+        let notes = vec!["C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B"];
         let offsets = self.notes.iter().zip(notes.iter()).map(|(offset, note)| -> String {
             let s = if offset.enabled {
                 let sign = if offset.semitones < 0.0 { "-" } else { " " };
@@ -1041,7 +1041,7 @@ impl fmt::Display for Scale {
             } else {
                 " -- -- --".to_string()
             };
-            note.to_string() + &s
+            format!("{:<2}{}", note, &s)
         }).collect::<Vec<String>>()
             .join("\n");
 
