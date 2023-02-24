@@ -2,8 +2,7 @@ use std::error::Error;
 use std::fs::File;
 use std::env;
 
-pub mod types;
-use crate::types::*;
+use m8_files::Song;
 
 fn main() {
     match run() {

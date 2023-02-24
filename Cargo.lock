@@ -31,11 +31,20 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "14c189c53d098945499cdfa7ecc63567cf3886b3332b312a5b4585d8d3a6a610"
 
 [[package]]
-name = "midi-m8"
+name = "m8-files"
 version = "0.1.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "9ed553bdc60f7346792567fe83f37df644e3b1abb5004244620c85e330bb57aa"
 dependencies = [
  "arr_macro",
  "byteorder",
+]
+
+[[package]]
+name = "midi-m8"
+version = "0.1.0"
+dependencies = [
+ "m8-files",
 ]
 
 [[package]]
