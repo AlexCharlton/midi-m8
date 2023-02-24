@@ -7,3 +7,5 @@ edition = "2021"
 
 [dependencies]
 m8-files = "0.1.0"
+midi-msg = "0.4.0"
+byteorder = "1.4.3"
