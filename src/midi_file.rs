@@ -1,6 +1,5 @@
-use byteorder::{ByteOrder, BigEndian};
+use byteorder::{BigEndian, ByteOrder};
 use midi_msg::*;
-
 
 // Midi file handling
 #[inline]
@@ -33,9 +32,8 @@ pub fn push_u16(x: u16, v: &mut Vec<u8>) {
     v.push(b2);
 }
 
-
 pub fn push_vari(x: u32, v: &mut Vec<u8>) {
-    if x <        0x00000080 {
+    if x < 0x00000080 {
         v.push(x as u8 & 0b01111111);
     } else if x < 0x00004000 {
         v.push(((x >> 7) as u8 & 0b01111111) + 0b10000000);
@@ -54,7 +52,7 @@ pub fn push_vari(x: u32, v: &mut Vec<u8>) {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, Copy, Clone)]
 #[repr(u16)]
 #[allow(dead_code)]
 pub enum MidiFileFormat {
@@ -68,7 +66,7 @@ pub struct MidiFile {
     pub ticks_per_quarter_note: u16,
     // TODO support subdivision-of-second delta-times
     pub format: MidiFileFormat,
-    pub tracks: Vec<MidiFileTrack>
+    pub tracks: Vec<MidiFileTrack>,
 }
 impl MidiFile {
     pub fn to_midi(&self) -> Vec<u8> {
@@ -128,11 +126,10 @@ impl MidiFileTrack {
     }
 
     /// Sort events by tick time
-    pub fn sort_events(&mut self) -> () {
+    pub fn sort_events(&mut self) {
         self.events.sort_by(|a, b| a.0.cmp(&b.0));
     }
 }
-
 
 #[cfg(test)]
 mod tests {
@@ -148,7 +145,11 @@ mod tests {
     fn validate_vari(n: u32, bytes: Vec<u8>) {
         let mut v: Vec<u8> = vec![];
         push_vari(n, &mut v);
-        assert_eq!(v, bytes, "{:#02X} should have been {:#02X?} not {:#02X?}", n, &bytes, &v);
+        assert_eq!(
+            v, bytes,
+            "{:#02X} should have been {:#02X?} not {:#02X?}",
+            n, &bytes, &v
+        );
     }
 
     #[test]
@@ -163,7 +164,6 @@ mod tests {
         validate_vari(0x4000, vec![0x81, 0x80, 0x00]);
         validate_vari(0x1FFFFF, vec![0xFF, 0xFF, 0x7F]);
         validate_vari(0x0FFFFFFF, vec![0xFF, 0xFF, 0xFF, 0x7F]);
-
     }
 
     #[test]
@@ -176,36 +176,69 @@ mod tests {
                 MidiFileTrack {
                     name: Some("Track 1".to_string()),
                     events: vec![
-                        (0, MidiMsg::ChannelVoice {
-                            channel: Channel::Ch1,
-                            msg: ChannelVoiceMsg::NoteOn {note: 72, velocity: 100}
-                        }),
-                        (quarter_note / 8,
-                         MidiMsg::ChannelVoice{
-                             channel: Channel::Ch1,
-                             msg: ChannelVoiceMsg::NoteOff {note: 72, velocity: 100}
-                         })
+                        (
+                            0,
+                            MidiMsg::ChannelVoice {
+                                channel: Channel::Ch1,
+                                msg: ChannelVoiceMsg::NoteOn {
+                                    note: 72,
+                                    velocity: 100,
+                                },
+                            },
+                        ),
+                        (
+                            quarter_note / 8,
+                            MidiMsg::ChannelVoice {
+                                channel: Channel::Ch1,
+                                msg: ChannelVoiceMsg::NoteOff {
+                                    note: 72,
+                                    velocity: 100,
+                                },
+                            },
+                        ),
                     ],
                     n_ticks: quarter_note * 4,
                 },
                 MidiFileTrack {
                     name: Some("Track 2".to_string()),
                     events: vec![
-                        (0, MidiMsg::ChannelVoice {
-                            channel: Channel::Ch1,
-                            msg: ChannelVoiceMsg::NoteOn {note: 72, velocity: 100}
-                        }),
-                        (quarter_note / 8,
-                         MidiMsg::ChannelVoice{
-                             channel: Channel::Ch1,
-                             msg: ChannelVoiceMsg::NoteOff {note: 72, velocity: 100}
-                         })
+                        (
+                            0,
+                            MidiMsg::ChannelVoice {
+                                channel: Channel::Ch1,
+                                msg: ChannelVoiceMsg::NoteOn {
+                                    note: 72,
+                                    velocity: 100,
+                                },
+                            },
+                        ),
+                        (
+                            quarter_note / 8,
+                            MidiMsg::ChannelVoice {
+                                channel: Channel::Ch1,
+                                msg: ChannelVoiceMsg::NoteOff {
+                                    note: 72,
+                                    velocity: 100,
+                                },
+                            },
+                        ),
                     ],
                     n_ticks: quarter_note * 4,
                 },
-            ]
-        }.to_midi();
+            ],
+        }
+        .to_midi();
 
-        assert_eq!(&midi_file, &[0x4d, 0x54, 0x68, 0x64, 0x0, 0x0, 0x0, 0x6, 0x0, 0x1, 0x0, 0x2, 0x3, 0xc0, 0x4d, 0x54, 0x72, 0x6b, 0x0, 0x0, 0x0, 0x18, 0x0, 0xff, 0x3, 0x7, 0x54, 0x72, 0x61, 0x63, 0x6b, 0x20, 0x31, 0x0, 0x90, 0x48, 0x64, 0x78, 0x80, 0x48, 0x64, 0x9d, 0x9, 0xff, 0x2f, 0x0, 0x4d, 0x54, 0x72, 0x6b, 0x0, 0x0, 0x0, 0x18, 0x0, 0xff, 0x3, 0x7, 0x54, 0x72, 0x61, 0x63, 0x6b, 0x20, 0x32, 0x0, 0x90, 0x48, 0x64, 0x78, 0x80, 0x48, 0x64, 0x9d, 0x9, 0xff, 0x2f, 0x0]);
+        assert_eq!(
+            &midi_file,
+            &[
+                0x4d, 0x54, 0x68, 0x64, 0x0, 0x0, 0x0, 0x6, 0x0, 0x1, 0x0, 0x2, 0x3, 0xc0, 0x4d,
+                0x54, 0x72, 0x6b, 0x0, 0x0, 0x0, 0x18, 0x0, 0xff, 0x3, 0x7, 0x54, 0x72, 0x61, 0x63,
+                0x6b, 0x20, 0x31, 0x0, 0x90, 0x48, 0x64, 0x78, 0x80, 0x48, 0x64, 0x9d, 0x9, 0xff,
+                0x2f, 0x0, 0x4d, 0x54, 0x72, 0x6b, 0x0, 0x0, 0x0, 0x18, 0x0, 0xff, 0x3, 0x7, 0x54,
+                0x72, 0x61, 0x63, 0x6b, 0x20, 0x32, 0x0, 0x90, 0x48, 0x64, 0x78, 0x80, 0x48, 0x64,
+                0x9d, 0x9, 0xff, 0x2f, 0x0
+            ]
+        );
     }
 }

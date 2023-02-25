@@ -1,11 +1,10 @@
 use std::ops::Range;
 
+use crate::midi_file::*;
 use m8_files::*;
 use midi_msg::*;
-use crate::midi_file::*;
 
 pub const TICKS_PER_QUARTER_NOTE: u32 = 24;
-
 
 #[derive(Debug)]
 pub struct Config {
@@ -58,7 +57,7 @@ impl TrackCtx {
         steps[step % steps.len()] as u32
     }
 
-    fn change_groove(&mut self, step: &Step, song: &Song) -> () {
+    fn change_groove(&mut self, step: &Step, song: &Song) {
         if step.fx1.command == FXCommand::GRV {
             self.groove = song.grooves[step.fx1.value as usize].clone();
         }
@@ -73,10 +72,11 @@ impl TrackCtx {
     fn add_note_off(&mut self, at_tick: u32, channel: Channel, note: u8) {
         self.events.push((
             at_tick.min(self.last_note_tick + self.max_note_length),
-            MidiMsg::ChannelVoice{
+            MidiMsg::ChannelVoice {
                 channel,
-                msg: ChannelVoiceMsg::NoteOff {note, velocity: 0}
-            }));
+                msg: ChannelVoiceMsg::NoteOff { note, velocity: 0 },
+            },
+        ));
     }
 
     fn add_note_on(&mut self, at_tick: u32, channel: Channel, note: u8, velocity: u8) {
@@ -85,27 +85,32 @@ impl TrackCtx {
         self.last_note = actual_note;
         self.events.push((
             at_tick,
-            MidiMsg::ChannelVoice{
+            MidiMsg::ChannelVoice {
                 channel,
-                msg: ChannelVoiceMsg::NoteOn {note: actual_note, velocity}
-            }));
+                msg: ChannelVoiceMsg::NoteOn {
+                    note: actual_note,
+                    velocity,
+                },
+            },
+        ));
     }
 }
-
-
 
 pub fn song_to_midi(song: &Song, cfg: &Config) -> Vec<u8> {
     let f = MidiFile {
         format: MidiFileFormat::SimultaniousTracks,
         ticks_per_quarter_note: TICKS_PER_QUARTER_NOTE as u16,
-        tracks: song_to_tracks(song, cfg)
+        tracks: song_to_tracks(song, cfg),
     };
     // dbg!(&f);
     f.to_midi()
 }
 
 fn song_to_tracks(song: &Song, cfg: &Config) -> Vec<MidiFileTrack> {
-    cfg.tracks.clone().map(|x| collect_track_events(x-1, song, cfg)).collect()
+    cfg.tracks
+        .clone()
+        .map(|x| collect_track_events(x - 1, song, cfg))
+        .collect()
 }
 
 fn collect_track_events(track: usize, song: &Song, cfg: &Config) -> MidiFileTrack {
@@ -131,13 +136,13 @@ fn collect_track_events(track: usize, song: &Song, cfg: &Config) -> MidiFileTrac
     }
 
     MidiFileTrack {
-        name: Some(format!("Track {}", track+1)),
+        name: Some(format!("Track {}", track + 1)),
         events: ctx.events,
         n_ticks: ctx.ticks.max(TICKS_PER_QUARTER_NOTE * 4),
     }
 }
 
-fn collect_chain_events(chain_num: u8, song: &Song, ctx: &mut TrackCtx) -> () {
+fn collect_chain_events(chain_num: u8, song: &Song, ctx: &mut TrackCtx) {
     let chain = &song.chains[chain_num as usize];
     // dbg!(chain);
     let mut chain_step = 0;
@@ -149,7 +154,7 @@ fn collect_chain_events(chain_num: u8, song: &Song, ctx: &mut TrackCtx) -> () {
     }
 }
 
-fn collect_phrase_events(phrase_num: u8, song: &Song, ctx: &mut TrackCtx) -> () {
+fn collect_phrase_events(phrase_num: u8, song: &Song, ctx: &mut TrackCtx) {
     let phrase = &song.phrases[phrase_num as usize];
     for i in 0..16 {
         let step = &phrase.steps[i];
@@ -164,4 +169,3 @@ fn collect_phrase_events(phrase_num: u8, song: &Song, ctx: &mut TrackCtx) -> () 
         ctx.ticks += ctx.groove_ticks(i);
     }
 }
-

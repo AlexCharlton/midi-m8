@@ -26,35 +26,35 @@ struct Args {
     global_transpose: i16,
 
     /// Only output track number (1-8)
-    #[arg(long, short='t', id="ONLY_TRACK_N")]
+    #[arg(long, short = 't', id = "ONLY_TRACK_N")]
     only_track: Option<usize>,
 
     /// Cap the maximum note length to this value in quarter notes
     #[arg(short, long)]
     max_note_length: Option<f32>,
     /// Cap the maximum note length for track 1 to this value in quarter notes
-    #[arg(long, id="TRACK_1_MAX_NOTE_LEN")]
+    #[arg(long, id = "TRACK_1_MAX_NOTE_LEN")]
     track_1_max_note_length: Option<f32>,
     /// Cap the maximum note length for track 2 to this value in quarter notes
-    #[arg(long, id="TRACK_2_MAX_NOTE_LEN")]
+    #[arg(long, id = "TRACK_2_MAX_NOTE_LEN")]
     track_2_max_note_length: Option<f32>,
     /// Cap the maximum note length for track 3 to this value in quarter notes
-    #[arg(long, id="TRACK_3_MAX_NOTE_LEN")]
+    #[arg(long, id = "TRACK_3_MAX_NOTE_LEN")]
     track_3_max_note_length: Option<f32>,
     /// Cap the maximum note length for track 4 to this value in quarter notes
-    #[arg(long, id="TRACK_4_MAX_NOTE_LEN")]
+    #[arg(long, id = "TRACK_4_MAX_NOTE_LEN")]
     track_4_max_note_length: Option<f32>,
     /// Cap the maximum note length for track 5 to this value in quarter notes
-    #[arg(long, id="TRACK_5_MAX_NOTE_LEN")]
+    #[arg(long, id = "TRACK_5_MAX_NOTE_LEN")]
     track_5_max_note_length: Option<f32>,
     /// Cap the maximum note length for track 6 to this value in quarter notes
-    #[arg(long, id="TRACK_6_MAX_NOTE_LEN")]
+    #[arg(long, id = "TRACK_6_MAX_NOTE_LEN")]
     track_6_max_note_length: Option<f32>,
     /// Cap the maximum note length for track 7 to this value in quarter notes
-    #[arg(long, id="TRACK_7_MAX_NOTE_LEN")]
+    #[arg(long, id = "TRACK_7_MAX_NOTE_LEN")]
     track_7_max_note_length: Option<f32>,
     /// Cap the maximum note length for track 8 to this value in quarter notes
-    #[arg(long, id="TRACK_8_MAX_NOTE_LEN")]
+    #[arg(long, id = "TRACK_8_MAX_NOTE_LEN")]
     track_8_max_note_length: Option<f32>,
 }
 impl Args {
@@ -64,7 +64,7 @@ impl Args {
 fn main() {
     match run() {
         Ok(_) => (),
-        Err(err) => println!("Error: {}", err)
+        Err(err) => println!("Error: {}", err),
     }
 }
 
@@ -73,17 +73,22 @@ fn run() -> Result<(), Box<dyn Error>> {
 
     // Construct configuration based on args
     let mut out_name: String = args.output.clone();
-    let mut config = Config{global_transpose: args.global_transpose,
-                            ..Config::default()};
+    let mut config = Config {
+        global_transpose: args.global_transpose,
+        ..Config::default()
+    };
 
     if let Some(track) = args.only_track {
         if track > 0 && track < 9 {
-            config.tracks = track..(track+1);
+            config.tracks = track..(track + 1);
             if out_name == Args::DEFAULT_OUTPUT_NAME {
                 out_name = format!("track-{}.midi", track);
             }
         } else {
-            println!("Warning: selected invalid track number {}. Defaulting to all tracks", track);
+            println!(
+                "Warning: selected invalid track number {}. Defaulting to all tracks",
+                track
+            );
         }
     }
 
@@ -98,8 +103,8 @@ fn run() -> Result<(), Box<dyn Error>> {
         args.track_8_max_note_length,
     ];
 
-    for i in 0..8 {
-        if let Some(l) = max_note_lengths[i].or(args.max_note_length) {
+    for (i, len) in max_note_lengths.iter().enumerate() {
+        if let Some(l) = len.or(args.max_note_length) {
             config.max_note_length[i] = (l * TICKS_PER_QUARTER_NOTE as f32) as u32;
         }
     }
@@ -111,7 +116,7 @@ fn run() -> Result<(), Box<dyn Error>> {
 
     // Write midi file
     let mut f_out = File::create(out_name)?;
-    f_out.write(&song_to_midi(&song, &config))?;
+    f_out.write_all(&song_to_midi(&song, &config))?;
 
     Ok(())
 }

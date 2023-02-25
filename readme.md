@@ -60,6 +60,7 @@ That are not currently supported:
 - Table support
 - Respect sequencer commands (other than GRV)
 - Respect scales
+- Instrument mode: output one track per instrument
 - Configurable channels
 - Instrument (program) changes
 - CC support
