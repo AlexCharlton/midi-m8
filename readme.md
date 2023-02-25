@@ -1,14 +1,15 @@
 # midi-m8
 A command line tool for turning Dirtywave M8 songs into Midi tracks.
 
+[![Crates.io](https://img.shields.io/crates/v/midi-m8)](https://crates.io/crates/midi-m8)
+
 ## Installation
 Precompiled 64 bit binaries for Linux and Windows can be found in the [Releases](https://github.com/AlexCharlton/midi-m8/releases). Download them and run them from the command line.
 
 To compile your own version:
 
 1. [install the Rust toolchain](https://rustup.rs/)
-2. `$ git clone https://github.com/AlexCharlton/midi-m8.git`
-3. `$ cd midi-m8; cargo build -r`
+2. `$ cargo-install midi-m8`
 
 You'll now have a binary in the `./target/release/` directory.
 
