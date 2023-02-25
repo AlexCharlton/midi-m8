@@ -1,3 +1,5 @@
+use std::ops::Range;
+
 use m8_files::*;
 use midi_msg::*;
 use crate::midi_file::*;
@@ -7,26 +9,29 @@ pub const TICKS_PER_QUARTER_NOTE: u32 = 24;
 
 #[derive(Debug)]
 pub struct Config {
-    global_transpose: i16,
-    max_note_length: [u32; 8],
+    pub global_transpose: i16,
+    pub max_note_length: [u32; 8],
+    pub tracks: Range<usize>,
 }
 impl Config {
     pub fn default() -> Self {
         Self {
             global_transpose: 36,
             max_note_length: [
-                std::u32::MAX,
-                std::u32::MAX,
-                std::u32::MAX,
-                std::u32::MAX,
-                std::u32::MAX,
-                std::u32::MAX,
-                std::u32::MAX,
-                std::u32::MAX,
-            ]
+                std::u32::MAX / 2,
+                std::u32::MAX / 2,
+                std::u32::MAX / 2,
+                std::u32::MAX / 2,
+                std::u32::MAX / 2,
+                std::u32::MAX / 2,
+                std::u32::MAX / 2,
+                std::u32::MAX / 2,
+            ],
+            tracks: 1..9,
         }
     }
 
+    #[allow(dead_code)]
     pub fn max_note_len(mut self, len_quarter: f32) -> Self {
         let len = (len_quarter * TICKS_PER_QUARTER_NOTE as f32) as u32;
         self.max_note_length = [len, len, len, len, len, len, len, len];
@@ -100,7 +105,7 @@ pub fn song_to_midi(song: &Song, cfg: &Config) -> Vec<u8> {
 }
 
 fn song_to_tracks(song: &Song, cfg: &Config) -> Vec<MidiFileTrack> {
-    (0..8).map(|x| collect_track_events(x, song, cfg)).collect()
+    cfg.tracks.clone().map(|x| collect_track_events(x-1, song, cfg)).collect()
 }
 
 fn collect_track_events(track: usize, song: &Song, cfg: &Config) -> MidiFileTrack {
