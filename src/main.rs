@@ -7,7 +7,7 @@ use m8_files::Song;
 mod midi_file;
 
 mod song_to_midi;
-use song_to_midi::song_to_midi;
+use song_to_midi::*;
 
 fn main() {
     match run() {
@@ -25,7 +25,7 @@ fn run() -> Result<(), Box<dyn Error>> {
     // dbg!(song);
 
     let mut f_out = File::create("out.mid")?;
-    f_out.write(&song_to_midi(&song))?;
+    f_out.write(&song_to_midi(&song, &Config::default().max_note_len(4.0)))?;
 
     Ok(())
 }

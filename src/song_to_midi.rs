@@ -4,18 +4,34 @@ use crate::midi_file::*;
 
 pub const TICKS_PER_QUARTER_NOTE: u32 = 24;
 
-pub fn song_to_midi(song: &Song) -> Vec<u8> {
-    let f = MidiFile {
-        format: MidiFileFormat::SimultaniousTracks,
-        ticks_per_quarter_note: TICKS_PER_QUARTER_NOTE as u16,
-        tracks: song_to_tracks(song)
-    };
-    // dbg!(&f);
-    f.to_midi()
-}
 
-fn song_to_tracks(song: &Song) -> Vec<MidiFileTrack> {
-    (0..8).map(|x| collect_track_events(x, song)).collect()
+#[derive(Debug)]
+pub struct Config {
+    global_transpose: i16,
+    max_note_length: [u32; 8],
+}
+impl Config {
+    pub fn default() -> Self {
+        Self {
+            global_transpose: 36,
+            max_note_length: [
+                std::u32::MAX,
+                std::u32::MAX,
+                std::u32::MAX,
+                std::u32::MAX,
+                std::u32::MAX,
+                std::u32::MAX,
+                std::u32::MAX,
+                std::u32::MAX,
+            ]
+        }
+    }
+
+    pub fn max_note_len(mut self, len_quarter: f32) -> Self {
+        let len = (len_quarter * TICKS_PER_QUARTER_NOTE as f32) as u32;
+        self.max_note_length = [len, len, len, len, len, len, len, len];
+        self
+    }
 }
 
 #[derive(Debug)]
@@ -24,8 +40,10 @@ struct TrackCtx {
     ticks: u32,
     transpose: i16,
     global_transpose: i16,
+    max_note_length: u32,
     groove: Groove,
     last_note: u8,
+    last_note_tick: u32,
     events: Vec<(u32, MidiMsg)>,
 }
 
@@ -34,15 +52,66 @@ impl TrackCtx {
         let steps = &self.groove.active_steps();
         steps[step % steps.len()] as u32
     }
+
+    fn change_groove(&mut self, step: &Step, song: &Song) -> () {
+        if step.fx1.command == FXCommand::GRV {
+            self.groove = song.grooves[step.fx1.value as usize].clone();
+        }
+        if step.fx2.command == FXCommand::GRV {
+            self.groove = song.grooves[step.fx2.value as usize].clone();
+        }
+        if step.fx3.command == FXCommand::GRV {
+            self.groove = song.grooves[step.fx3.value as usize].clone();
+        }
+    }
+
+    fn add_note_off(&mut self, at_tick: u32, channel: Channel, note: u8) {
+        self.events.push((
+            at_tick.min(self.last_note_tick + self.max_note_length),
+            MidiMsg::ChannelVoice{
+                channel,
+                msg: ChannelVoiceMsg::NoteOff {note, velocity: 0}
+            }));
+    }
+
+    fn add_note_on(&mut self, at_tick: u32, channel: Channel, note: u8, velocity: u8) {
+        let actual_note = (note as i16 + self.transpose + self.global_transpose) as u8;
+        self.last_note_tick = at_tick;
+        self.last_note = actual_note;
+        self.events.push((
+            at_tick,
+            MidiMsg::ChannelVoice{
+                channel,
+                msg: ChannelVoiceMsg::NoteOn {note: actual_note, velocity}
+            }));
+    }
 }
 
-fn collect_track_events(track: usize, song: &Song) -> MidiFileTrack {
+
+
+pub fn song_to_midi(song: &Song, cfg: &Config) -> Vec<u8> {
+    let f = MidiFile {
+        format: MidiFileFormat::SimultaniousTracks,
+        ticks_per_quarter_note: TICKS_PER_QUARTER_NOTE as u16,
+        tracks: song_to_tracks(song, cfg)
+    };
+    // dbg!(&f);
+    f.to_midi()
+}
+
+fn song_to_tracks(song: &Song, cfg: &Config) -> Vec<MidiFileTrack> {
+    (0..8).map(|x| collect_track_events(x, song, cfg)).collect()
+}
+
+fn collect_track_events(track: usize, song: &Song, cfg: &Config) -> MidiFileTrack {
     let mut ctx = TrackCtx {
         ticks: 0,
         transpose: 0,
-        global_transpose: 36,
+        global_transpose: cfg.global_transpose,
+        max_note_length: cfg.max_note_length[track],
         groove: song.grooves[0].clone(),
         last_note: 255,
+        last_note_tick: 0,
         events: vec![],
     };
     let mut song_step = 0;
@@ -53,12 +122,7 @@ fn collect_track_events(track: usize, song: &Song) -> MidiFileTrack {
     }
 
     if ctx.last_note != 255 {
-        ctx.events.push((
-            ctx.ticks,
-            MidiMsg::ChannelVoice{
-                channel: Channel::Ch1,
-                msg: ChannelVoiceMsg::NoteOff {note: ctx.last_note, velocity: 0}
-            }));
+        ctx.add_note_off(ctx.ticks, Channel::Ch1, ctx.last_note);
     }
 
     MidiFileTrack {
@@ -87,21 +151,12 @@ fn collect_phrase_events(phrase_num: u8, song: &Song, ctx: &mut TrackCtx) -> () 
         // dbg!(step, ctx.ticks);
         if step.note.0 != 255 {
             if ctx.last_note != 255 {
-                ctx.events.push((
-                    ctx.ticks,
-                    MidiMsg::ChannelVoice{
-                        channel: Channel::Ch1,
-                        msg: ChannelVoiceMsg::NoteOff {note: ctx.last_note, velocity: 0}
-                    }));
+                ctx.add_note_off(ctx.ticks, Channel::Ch1, ctx.last_note);
             }
-            ctx.last_note = (step.note.0 as i16 + ctx.transpose + ctx.global_transpose) as u8;
-            ctx.events.push((
-                ctx.ticks,
-                MidiMsg::ChannelVoice {
-                    channel: Channel::Ch1,
-                    msg: ChannelVoiceMsg::NoteOn {note: ctx.last_note, velocity: step.velocity}
-                }));
+            ctx.add_note_on(ctx.ticks, Channel::Ch1, step.note.0, step.velocity);
         }
+        ctx.change_groove(step, song);
         ctx.ticks += ctx.groove_ticks(i);
     }
 }
+
