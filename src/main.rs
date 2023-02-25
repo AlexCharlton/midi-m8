@@ -18,7 +18,7 @@ struct Args {
     input_file: String,
 
     /// Output file name
-    #[arg(short='t', long, default_value = "tracks.midi")]
+    #[arg(short='o', long, default_value = Args::DEFAULT_OUTPUT_NAME)]
     output: String,
 
     /// How to map M8 note numbers to Midi Note numbers
@@ -26,7 +26,7 @@ struct Args {
     global_transpose: i16,
 
     /// Only output track number (1-8)
-    #[arg(long, short='n', id="ONLY_TRACK_N")]
+    #[arg(long, short='t', id="ONLY_TRACK_N")]
     only_track: Option<usize>,
 
     /// Cap the maximum note length to this value in quarter notes
@@ -57,6 +57,9 @@ struct Args {
     #[arg(long, id="TRACK_8_MAX_NOTE_LEN")]
     track_8_max_note_length: Option<f32>,
 }
+impl Args {
+    const DEFAULT_OUTPUT_NAME: &str = "tracks.midi";
+}
 
 fn main() {
     match run() {
@@ -68,12 +71,17 @@ fn main() {
 fn run() -> Result<(), Box<dyn Error>> {
     let args = Args::parse();
 
+    // Construct configuration based on args
+    let mut out_name: String = args.output.clone();
     let mut config = Config{global_transpose: args.global_transpose,
                             ..Config::default()};
 
     if let Some(track) = args.only_track {
         if track > 0 && track < 9 {
             config.tracks = track..(track+1);
+            if out_name == Args::DEFAULT_OUTPUT_NAME {
+                out_name = format!("track-{}.midi", track);
+            }
         } else {
             println!("Warning: selected invalid track number {}. Defaulting to all tracks", track);
         }
@@ -96,11 +104,13 @@ fn run() -> Result<(), Box<dyn Error>> {
         }
     }
 
+    // Load m8s file
     let mut f = File::open(args.input_file)?;
     let song = Song::read(&mut f)?;
     // dbg!(song);
 
-    let mut f_out = File::create(args.output)?;
+    // Write midi file
+    let mut f_out = File::create(out_name)?;
     f_out.write(&song_to_midi(&song, &config))?;
 
     Ok(())
