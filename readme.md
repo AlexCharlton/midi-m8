@@ -1,4 +1,4 @@
-# Midi m8
+# midi-m8
 A command line tool for turning Dirtywave M8 songs into Midi tracks.
 
 ## Installation
@@ -49,6 +49,8 @@ Options:
   -V, --version
           Print version
 ```
+
+Or in other words, point the command at a `.m8s` file, and you'll get a multi-track Midi file in return. You should be able to drag these Midi files into your DAW.
 
 ## Possible features
 That are not currently supported:
