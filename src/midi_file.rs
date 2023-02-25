@@ -1,6 +1,7 @@
 use byteorder::{ByteOrder, BigEndian};
 use midi_msg::*;
 
+
 // Midi file handling
 #[inline]
 pub fn u32_to_bytes(x: u32) -> [u8; 4] {
@@ -53,14 +54,16 @@ pub fn push_vari(x: u32, v: &mut Vec<u8>) {
     }
 }
 
-#[allow(dead_code)]
+#[derive(Debug)]
 #[repr(u16)]
+#[allow(dead_code)]
 pub enum MidiFileFormat {
     SingleTrack = 0,
     SimultaniousTracks = 1,
     IndependantTracks = 2,
 }
 
+#[derive(Debug)]
 pub struct MidiFile {
     pub ticks_per_quarter_note: u16,
     // TODO support subdivision-of-second delta-times
@@ -89,6 +92,7 @@ impl MidiFile {
     }
 }
 
+#[derive(Debug)]
 pub struct MidiFileTrack {
     /// A vector of tick/Midi event tuples.
     /// Unlike in the Midi file representation, the ticks in the tuple represent
@@ -132,7 +136,7 @@ impl MidiFileTrack {
 
 #[cfg(test)]
 mod tests {
-    use crate::*;
+    use crate::midi_file::*;
 
     #[test]
     fn test_u32_to_bytes() {
