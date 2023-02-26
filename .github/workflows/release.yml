@@ -1,10 +1,27 @@
-on: [push]
-
 name: Release
 
+on:
+  push:
+    tags:
+      - 'v*'
+
 jobs:
-  build:
-    name: Build
+  create_release:
+    name: Create Release
+    runs-on: ubuntu-latest
+    steps:
+      - name: Create Release
+        id: create_release
+        uses: softprops/action-gh-release@v1
+        with:
+          name: ${{ github.ref_name }}
+          draft: false
+          prerelease: false
+          generate_release_notes: false
+
+  build_release:
+    name: Build and Release
+    needs: create_release
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
@@ -29,3 +46,12 @@ jobs:
 
       - name: Package
         run: just package
+
+      - name: Release
+        uses: softprops/action-gh-release@v1
+        with:
+          tag_name: ${{ needs.create_release.outputs.tag-name }}
+          files: packages/midi-m8-*
+
+permissions:
+  contents: write
