@@ -1,17 +1,11 @@
 # midi-m8
 A command line tool for turning Dirtywave M8 songs into Midi tracks.
 
-[![Crates.io](https://img.shields.io/crates/v/midi-m8)](https://crates.io/crates/midi-m8) [![CI](https://github.com/AlexCharlton/midi-m8/actions/workflows/ci.yml/badge.svg)](https://github.com/AlexCharlton/midi-m8/actions/workflows/ci.yml)
+[![Crates.io](https://img.shields.io/crates/v/midi-m8)](https://crates.io/crates/midi-m8)
+[![CI](https://github.com/AlexCharlton/midi-m8/actions/workflows/ci.yml/badge.svg)](https://github.com/AlexCharlton/midi-m8/actions/workflows/ci.yml)
 
 ## Installation
 Precompiled 64 bit binaries for Linux, Windows and OS X can be found in the [Releases](https://github.com/AlexCharlton/midi-m8/releases/latest). Download them and run them from the command line.
-
-To compile your own version:
-
-1. [install the Rust toolchain](https://rustup.rs/)
-2. `$ cargo-install midi-m8`
-
-You'll now have a binary in the `./target/release/` directory.
 
 ## Usage
 ```
@@ -21,11 +15,11 @@ Arguments:
   <INPUT_FILE>  Input (.m8s) file
 
 Options:
-  -t, --output <OUTPUT>
+  -o, --output <OUTPUT>
           Output file name [default: tracks.midi]
   -g, --global-transpose <GLOBAL_TRANSPOSE>
           How to map M8 note numbers to Midi Note numbers [default: 36]
-  -n, --only-track <ONLY_TRACK_N>
+  -t, --only-track <ONLY_TRACK_N>
           Only output track number (1-8)
   -m, --max-note-length <MAX_NOTE_LENGTH>
           Cap the maximum note length to this value in quarter notes
@@ -53,14 +47,50 @@ Options:
 
 Or in other words, point the command at a `.m8s` file, and you'll get a multi-track Midi file in return. You should be able to drag these Midi files into your DAW.
 
+### Examples
+**Basic**
+```
+$ midi-m8 DEMO1.m8s
+```
+This will create a file `tracks.midi`.
+
+**Choose output file name**
+```
+$ midi-m8 DEMO1.m8s -o output.mid
+```
+This will create a file `output.mid`.
+
+**Limit note length**
+```
+$ midi-m8 -m 2 DEMO1.m8s
+```
+This caps the note length to 2 quarter notes.
+
+**Single track**
+```
+$ midi-m8 --only-track 5 DEMO1.m8s
+```
+This will output only track 5 to `track-5.midi`.
+
+
 ## Possible features
 That are not currently supported:
 - Time signatures
 - Tempo
 - Table support
-- Respect sequencer commands (other than GRV)
-- Respect scales
+- Respect sequencer commands (other than GRV, which is already supported)
 - Instrument mode: output one track per instrument
 - Configurable channels
 - Instrument (program) changes
 - CC support
+
+## Compiling
+To compile your own version, you'll first need to [install the Rust toolchain](https://rustup.rs/).
+
+Then, the easiest way to wind up with midi-m8 is to `$ cargo-install midi-m8`.
+
+Alternately you could:
+1. `$ git clone https://github.com/AlexCharlton/midi-m8.git && cd midi-m8`
+2. `cargo build --release`
+You'll now have a binary in the `./target/release/` directory.
+
