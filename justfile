@@ -20,17 +20,23 @@ package-dir:
     rm -rf packages/prep
     mkdir -p packages/prep
 
-[linux]
 package: build package-dir
+    just _package `./target/release/{{output-filename}} --version | awk '{print $2}'`
+
+[linux]
+_package version:
     cp target/release/{{output-filename}} packages/prep
-    cd packages/prep && tar cv * | gzip -9 > "../midi-m8-{{target-os}}_{{target-arch}}.tgz"
+    cd packages/prep && tar cv * | gzip -9 > "../midi-m8-{{version}}-{{target-os}}_{{target-arch}}.tgz"
+    @echo "Created ./packages/midi-m8-{{version}}-{{target-os}}_{{target-arch}}.tgz"
 
 [macos]
-package: build package-dir
+_package version:
     cp target/release/{{output-filename}} packages/prep
-    cd packages/prep && zip -r -9  "../midi-m8-{{target-os}}_{{target-arch}}.tgz" *
+    cd packages/prep && zip -r -9  "../midi-m8-{{version}}{{target-os}}_{{target-arch}}.zip" *
+    @echo "Created ./packages/midi-m8-{{version}}-{{target-os}}_{{target-arch}}.zip"
 
 [windows]
-package: build package-dir
+_package version:
     cp target/release/{{output-filename}} packages/prep
-    cd packages/prep && 7z a -mx9 "../midi-m8-{{target-os}}_{{target-arch}}.tgz" *
+    cd packages/prep && 7z a -mx9 "../midi-m8-{{version}}{{target-os}}_{{target-arch}}.zip" *
+    @echo "Created ./packages/midi-m8-{{version}}-{{target-os}}_{{target-arch}}.zip"
