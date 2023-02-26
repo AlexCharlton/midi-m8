@@ -9,26 +9,26 @@ jobs:
     name: Checks
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout sources
+      - name: Setup | Checkout
         uses: actions/checkout@v3
-
-      - uses: actions-rs/toolchain@v1
+      - name: Setup | Rust
+        uses: actions-rs/toolchain@v1
         with:
           toolchain: stable
           profile: minimal
           components: rustfmt, clippy
           override: true
+      - name: Setup | Cache
+        uses: Swatinem/rust-cache@v2
 
-      - uses: Swatinem/rust-cache@v2
-
-      - name: Check
+      - name: Run | check
         run: cargo check
 
-      - name: Test
+      - name: Run | test
         run: cargo test
 
-      - name: fmt
+      - name: Run | fmt
         run: cargo fmt --all -- --check
 
-      - name: clippy
+      - name: Run | clippy
         run: cargo clippy -- -D warnings

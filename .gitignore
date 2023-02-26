@@ -1,4 +1,5 @@
 /target
+/packages
 *.m8s
 *.mid
 *.midi
