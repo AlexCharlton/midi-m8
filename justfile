@@ -32,11 +32,11 @@ _package version:
 [macos]
 _package version:
     cp target/release/{{output-filename}} packages/prep
-    cd packages/prep && zip -r -9  "../midi-m8-{{version}}{{target-os}}_{{target-arch}}.zip" *
+    cd packages/prep && zip -r -9  "../midi-m8-{{version}}-{{target-os}}_{{target-arch}}.zip" *
     @echo "Created ./packages/midi-m8-{{version}}-{{target-os}}_{{target-arch}}.zip"
 
 [windows]
 _package version:
     cp target/release/{{output-filename}} packages/prep
-    cd packages/prep && 7z a -mx9 "../midi-m8-{{version}}{{target-os}}_{{target-arch}}.zip" *
+    cd packages/prep && 7z a -mx9 "../midi-m8-{{version}}-{{target-os}}_{{target-arch}}.zip" *
     @echo "Created ./packages/midi-m8-{{version}}-{{target-os}}_{{target-arch}}.zip"
