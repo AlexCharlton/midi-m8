@@ -9,7 +9,7 @@ Precompiled 64 bit binaries for Linux, Windows and OS X can be found in the [Rel
 
 ## Usage
 ```
-Usage: midi-m8 [OPTIONS] <INPUT_FILE>
+Usage: midi-m8.exe [OPTIONS] <INPUT_FILE>
 
 Arguments:
   <INPUT_FILE>  Input (.m8s) file
@@ -21,6 +21,8 @@ Options:
           How to map M8 note numbers to Midi Note numbers [default: 36]
   -t, --only-track <ONLY_TRACK_N>
           Only output track number (1-8)
+  -s, --start-from <START_FROM>
+          Start from this song position (hex: 00-FF)
   -m, --max-note-length <MAX_NOTE_LENGTH>
           Cap the maximum note length to this value in quarter notes
       --track-1-max-note-length <TRACK_1_MAX_NOTE_LEN>
@@ -50,27 +52,33 @@ Or in other words, point the command at a `.m8s` file, and you'll get a multi-tr
 ### Examples
 **Basic**
 ```
-$ midi-m8 DEMO1.m8s
+$ midi-m8 Songs/Demos/DEMO1.m8s
 ```
 This will create a file `tracks.midi`.
 
 **Choose output file name**
 ```
-$ midi-m8 DEMO1.m8s -o output.mid
+$ midi-m8 Songs/Demos/DEMO1.m8s -o output.mid
 ```
 This will create a file `output.mid`.
 
 **Limit note length**
 ```
-$ midi-m8 -m 2 DEMO1.m8s
+$ midi-m8 -m 2 Songs/Demos/DEMO1.m8s
 ```
 This caps the note length to 2 quarter notes.
 
 **Single track**
 ```
-$ midi-m8 --only-track 5 DEMO1.m8s
+$ midi-m8 --only-track 5 Songs/Demos/DEMO1.m8s
 ```
 This will output only track 5 to `track-5.midi`.
+
+**Starting position**
+```
+$ midi-m8 -s 02 Songs/Demos/DEMO1.m8s
+```
+This will render Midi starting from the given position in the song.
 
 
 ## Possible features

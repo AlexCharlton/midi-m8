@@ -29,7 +29,7 @@ struct Args {
     #[arg(long, short = 't', id = "ONLY_TRACK_N")]
     only_track: Option<usize>,
 
-    /// Start from the track (hex) number (00-FF)
+    /// Start from this song position (hex: 00-FF)
     #[arg(long, short = 's')]
     start_from: Option<String>,
 
