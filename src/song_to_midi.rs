@@ -11,6 +11,7 @@ pub struct Config {
     pub global_transpose: i16,
     pub max_note_length: [u32; 8],
     pub tracks: Range<usize>,
+    pub start_from: u8,
 }
 impl Config {
     pub fn default() -> Self {
@@ -27,6 +28,7 @@ impl Config {
                 std::u32::MAX / 2,
             ],
             tracks: 1..9,
+            start_from: 0,
         }
     }
 
@@ -124,7 +126,7 @@ fn collect_track_events(track: usize, song: &Song, cfg: &Config) -> MidiFileTrac
         last_note_tick: 0,
         events: vec![],
     };
-    let mut song_step = 0;
+    let mut song_step = cfg.start_from as usize;
     while song.song.steps[song_step * 8 + track] < 0xFF {
         let chain_num = song.song.steps[song_step * 8 + track];
         collect_chain_events(chain_num, song, &mut ctx);

@@ -29,6 +29,11 @@ struct Args {
     #[arg(long, short = 't', id = "ONLY_TRACK_N")]
     only_track: Option<usize>,
 
+    /// Start from the track (hex) number (00-FF)
+    #[arg(long, short = 's')]
+    start_from: Option<String>,
+
+
     /// Cap the maximum note length to this value in quarter notes
     #[arg(short, long)]
     max_note_length: Option<f32>,
@@ -93,6 +98,17 @@ fn run() -> Result<(), Box<dyn Error>> {
         }
     }
 
+    if let Some(start_from) = &args.start_from {
+        if let Ok(start_from) = i8::from_str_radix(start_from, 16) {
+            config.start_from = start_from as u8;
+        } else {
+            println!(
+                "Warning: START_FROM must be a hex number from 00-FF. Got {}. Defaulting to starting from step 0.",
+                start_from
+            );
+        }
+    }
+
     let max_note_lengths: [Option<f32>; 8] = [
         args.track_1_max_note_length,
         args.track_2_max_note_length,
@@ -116,8 +132,8 @@ fn run() -> Result<(), Box<dyn Error>> {
     // dbg!(song);
 
     // Write midi file
-    let mut f_out = File::create(out_name)?;
+    let mut f_out = File::create(out_name.clone())?;
     f_out.write_all(&song_to_midi(&song, &config))?;
-
+    println!("Wrote {}", &out_name);
     Ok(())
 }
