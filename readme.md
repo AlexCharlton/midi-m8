@@ -9,7 +9,7 @@ Precompiled 64 bit binaries for Linux, Windows and OS X can be found in the [Rel
 
 ## Usage
 ```
-Usage: midi-m8.exe [OPTIONS] <INPUT_FILE>
+Usage: midi-m8 [OPTIONS] <INPUT_FILE>
 
 Arguments:
   <INPUT_FILE>  Input (.m8s) file
