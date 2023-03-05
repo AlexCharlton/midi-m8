@@ -62,6 +62,7 @@ impl Args {
 }
 
 fn main() {
+    human_panic::setup_panic!();
     match run() {
         Ok(_) => (),
         Err(err) => println!("Error: {}", err),
