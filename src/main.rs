@@ -33,7 +33,6 @@ struct Args {
     #[arg(long, short = 's')]
     start_from: Option<String>,
 
-
     /// Cap the maximum note length to this value in quarter notes
     #[arg(short, long)]
     max_note_length: Option<f32>,
