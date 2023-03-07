@@ -78,7 +78,7 @@ This will output only track 5 to `track-5.midi`.
 ```
 $ midi-m8 -s 02 Songs/Demos/DEMO1.m8s
 ```
-This will render Midi starting from the given position in the song.
+This will render Midi starting from the position `02` in the song.
 
 
 ## Possible features
