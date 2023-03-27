@@ -297,11 +297,19 @@ checksum = "bc4010833aea396656c2f91ee704d51a6f1329ec2ab56ffd00bfd56f7481ea94"
 
 [[package]]
 name = "midi-m8"
-version = "1.0.0"
+version = "1.1.0"
 dependencies = [
- "byteorder",
  "clap",
  "human-panic",
+ "m8-files",
+ "midi-m8-core",
+]
+
+[[package]]
+name = "midi-m8-core"
+version = "1.1.0"
+dependencies = [
+ "byteorder",
  "m8-files",
  "midi-msg",
 ]

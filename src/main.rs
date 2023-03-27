@@ -5,10 +5,8 @@ use std::io::Write;
 use clap::Parser;
 
 use m8_files::Song;
-mod midi_file;
 
-mod song_to_midi;
-use song_to_midi::*;
+use midi_m8_core::song_to_midi::*;
 
 #[derive(Parser)]
 #[command(version, about)]
