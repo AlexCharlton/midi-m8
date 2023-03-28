@@ -1,0 +1,15 @@
+[package]
+name = "midi-m8-plugin"
+version = "1.1.0"
+edition = "2021"
+repository = "https://github.com/AlexCharlton/midi-m8"
+license = "MIT"
+
+[lib]
+crate-type = ["cdylib"]
+
+[dependencies]
+m8-files = { workspace = true }
+midi-msg = { workspace = true }
+nih_plug = { git = "https://github.com/robbert-vdh/nih-plug.git" }
+#nih_plug_xtask = { path = "../../external/nih-plug/nih_plug_xtask" }
