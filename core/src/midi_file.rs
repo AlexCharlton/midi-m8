@@ -54,7 +54,6 @@ pub fn push_vari(x: u32, v: &mut Vec<u8>) {
 
 #[derive(Debug, Copy, Clone)]
 #[repr(u16)]
-#[allow(dead_code)]
 pub enum MidiFileFormat {
     SingleTrack = 0,
     SimultaniousTracks = 1,
@@ -101,7 +100,6 @@ pub struct MidiFileTrack {
     /// Length of the track in ticks
     pub n_ticks: u32,
 }
-#[allow(dead_code)]
 impl MidiFileTrack {
     pub fn extend_midi(&self, v: &mut Vec<u8>) {
         v.extend_from_slice(b"MTrk");

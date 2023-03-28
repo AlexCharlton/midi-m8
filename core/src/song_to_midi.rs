@@ -14,7 +14,15 @@ pub struct Config {
     pub start_from: u8,
 }
 impl Config {
-    pub fn default() -> Self {
+    pub fn max_note_len(mut self, len_quarter: f32) -> Self {
+        let len = (len_quarter * TICKS_PER_QUARTER_NOTE as f32) as u32;
+        self.max_note_length = [len, len, len, len, len, len, len, len];
+        self
+    }
+}
+
+impl Default for Config {
+    fn default() -> Self {
         Self {
             global_transpose: 36,
             max_note_length: [
@@ -30,13 +38,6 @@ impl Config {
             tracks: 1..9,
             start_from: 0,
         }
-    }
-
-    #[allow(dead_code)]
-    pub fn max_note_len(mut self, len_quarter: f32) -> Self {
-        let len = (len_quarter * TICKS_PER_QUARTER_NOTE as f32) as u32;
-        self.max_note_length = [len, len, len, len, len, len, len, len];
-        self
     }
 }
 
