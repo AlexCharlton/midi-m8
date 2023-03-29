@@ -96,10 +96,34 @@ dependencies = [
 ]
 
 [[package]]
+name = "baseview"
+version = "0.1.0"
+source = "git+https://github.com/RustAudio/baseview.git#c129b12ead4f5ac02126f559ceb8ce43cc982200"
+dependencies = [
+ "cocoa",
+ "core-foundation",
+ "keyboard-types",
+ "nix",
+ "objc",
+ "raw-window-handle",
+ "uuid 0.8.2",
+ "winapi",
+ "x11",
+ "xcb",
+ "xcb-util",
+]
+
+[[package]]
 name = "bitflags"
 version = "1.3.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "bef38d45163c2f1dde094a7dfd33ccf595c92905c8f8f4fdc18d06fb1037718a"
+
+[[package]]
+name = "block"
+version = "0.1.6"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "0d8c1fef690941d3e7788d328517591fecc684c084084702d6ff1641e993699a"
 
 [[package]]
 name = "bstr"
@@ -173,6 +197,37 @@ dependencies = [
 ]
 
 [[package]]
+name = "cocoa"
+version = "0.24.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "f425db7937052c684daec3bd6375c8abe2d146dca4b8b143d6db777c39138f3a"
+dependencies = [
+ "bitflags",
+ "block",
+ "cocoa-foundation",
+ "core-foundation",
+ "core-graphics",
+ "foreign-types",
+ "libc",
+ "objc",
+]
+
+[[package]]
+name = "cocoa-foundation"
+version = "0.1.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "931d3837c286f56e3c58423ce4eba12d08db2374461a785c86f672b08b5650d6"
+dependencies = [
+ "bitflags",
+ "block",
+ "core-foundation",
+ "core-graphics-types",
+ "foreign-types",
+ "libc",
+ "objc",
+]
+
+[[package]]
 name = "concolor"
 version = "0.0.12"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -204,6 +259,31 @@ name = "core-foundation-sys"
 version = "0.8.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "5827cebf4670468b8772dd191856768aedcb1b0278a04f989f7766351917b9dc"
+
+[[package]]
+name = "core-graphics"
+version = "0.22.3"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "2581bbab3b8ffc6fcbd550bf46c355135d16e9ff2a6ea032ad6b9bf1d7efe4fb"
+dependencies = [
+ "bitflags",
+ "core-foundation",
+ "core-graphics-types",
+ "foreign-types",
+ "libc",
+]
+
+[[package]]
+name = "core-graphics-types"
+version = "0.1.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "3a68b68b3446082644c91ac778bf50cd4104bfb002b5a6a7c44cca5a2c70788b"
+dependencies = [
+ "bitflags",
+ "core-foundation",
+ "foreign-types",
+ "libc",
+]
 
 [[package]]
 name = "crossbeam"
@@ -249,7 +329,7 @@ dependencies = [
  "autocfg",
  "cfg-if",
  "crossbeam-utils",
- "memoffset",
+ "memoffset 0.8.0",
  "scopeguard",
 ]
 
@@ -298,6 +378,21 @@ dependencies = [
  "cc",
  "libc",
 ]
+
+[[package]]
+name = "foreign-types"
+version = "0.3.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "f6f339eb8adc052cd2ca78910fda869aefa38d22d5cb648e6485e4d3fc06f3b1"
+dependencies = [
+ "foreign-types-shared",
+]
+
+[[package]]
+name = "foreign-types-shared"
+version = "0.1.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "00b0228411908ca8685dba7fc2cdd70ec9990a6e753e89b6ac91a84c40fbaf4b"
 
 [[package]]
 name = "getrandom"
@@ -367,7 +462,7 @@ dependencies = [
  "serde_derive",
  "termcolor",
  "toml",
- "uuid",
+ "uuid 1.3.0",
 ]
 
 [[package]]
@@ -407,6 +502,15 @@ name = "itoa"
 version = "1.0.6"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "453ad9f582a441959e5f0d088b02ce04cfe8d51a8eaf077f12ac6d3e94164ca6"
+
+[[package]]
+name = "keyboard-types"
+version = "0.6.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "0b7668b7cff6a51fe61cdde64cd27c8a220786f399501b57ebe36f7d8112fd68"
+dependencies = [
+ "bitflags",
+]
 
 [[package]]
 name = "lazy_static"
@@ -472,6 +576,15 @@ checksum = "2dffe52ecf27772e601905b7522cb4ef790d2cc203488bbd0e2fe85fcb74566d"
 
 [[package]]
 name = "memoffset"
+version = "0.6.5"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "5aa361d4faea93603064a027415f07bd8e1d5c88c9fbf68bf56a285428fd79ce"
+dependencies = [
+ "autocfg",
+]
+
+[[package]]
+name = "memoffset"
 version = "0.8.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "d61c719bcfbcf5d62b3a09efa6088de8c54bc0bfcd3ea7ae39fcc186108b8de1"
@@ -514,6 +627,7 @@ dependencies = [
 name = "midi-m8-plugin"
 version = "1.1.0"
 dependencies = [
+ "baseview",
  "m8-files",
  "midi-msg",
  "nih_plug",
@@ -555,7 +669,7 @@ dependencies = [
 [[package]]
 name = "nih_plug"
 version = "0.0.0"
-source = "git+https://github.com/robbert-vdh/nih-plug.git#e59dc33aaf0c06c834dba0821f6e269e6377f362"
+source = "git+https://github.com/robbert-vdh/nih-plug.git#b9031ecd2ff5749ff374fc649ec38acdf9cb26bc"
 dependencies = [
  "anyhow",
  "anymap",
@@ -586,7 +700,7 @@ dependencies = [
 [[package]]
 name = "nih_plug_derive"
 version = "0.1.0"
-source = "git+https://github.com/robbert-vdh/nih-plug.git#e59dc33aaf0c06c834dba0821f6e269e6377f362"
+source = "git+https://github.com/robbert-vdh/nih-plug.git#b9031ecd2ff5749ff374fc649ec38acdf9cb26bc"
 dependencies = [
  "proc-macro2",
  "quote",
@@ -596,12 +710,26 @@ dependencies = [
 [[package]]
 name = "nih_plug_xtask"
 version = "0.1.0"
+source = "git+https://github.com/robbert-vdh/nih-plug.git#b9031ecd2ff5749ff374fc649ec38acdf9cb26bc"
 dependencies = [
  "anyhow",
  "goblin",
  "reflink",
  "serde",
  "toml",
+]
+
+[[package]]
+name = "nix"
+version = "0.22.3"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "e4916f159ed8e5de0082076562152a76b7a1f64a01fd9d1e0fea002c37624faf"
+dependencies = [
+ "bitflags",
+ "cc",
+ "cfg-if",
+ "libc",
+ "memoffset 0.6.5",
 ]
 
 [[package]]
@@ -676,6 +804,12 @@ dependencies = [
  "smallvec",
  "windows-sys",
 ]
+
+[[package]]
+name = "pkg-config"
+version = "0.3.26"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "6ac9a59f73473f1b8d852421e59e64809f025994837ef743615c6d0c5b305160"
 
 [[package]]
 name = "plain"
@@ -959,6 +1093,15 @@ checksum = "84a22b9f218b40614adcb3f4ff08b703773ad44fa9423e4e0d346d5db86e4ebc"
 
 [[package]]
 name = "uuid"
+version = "0.8.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "bc5cf98d8186244414c848017f0e2676b3fcb46807f6668a97dfe67359a3c4b7"
+dependencies = [
+ "getrandom",
+]
+
+[[package]]
+name = "uuid"
 version = "1.3.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "1674845326ee10d37ca60470760d4288a6f80f304007d92e5c53bab78c9cfd79"
@@ -1134,6 +1277,37 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "faf09497b8f8b5ac5d3bb4d05c0a99be20f26fd3d5f2db7b0716e946d5103658"
 dependencies = [
  "memchr",
+]
+
+[[package]]
+name = "x11"
+version = "2.21.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "502da5464ccd04011667b11c435cb992822c2c0dbde1770c988480d312a0db2e"
+dependencies = [
+ "libc",
+ "pkg-config",
+]
+
+[[package]]
+name = "xcb"
+version = "0.9.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "62056f63138b39116f82a540c983cc11f1c90cd70b3d492a70c25eaa50bd22a6"
+dependencies = [
+ "libc",
+ "log",
+ "x11",
+]
+
+[[package]]
+name = "xcb-util"
+version = "0.3.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "43893e47f27bf7d81d489feef3a0e34a457e90bc314b7e74ad9bb3980e4c1c48"
+dependencies = [
+ "libc",
+ "xcb",
 ]
 
 [[package]]

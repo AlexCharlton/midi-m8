@@ -12,4 +12,5 @@ crate-type = ["cdylib"]
 m8-files = { workspace = true }
 midi-msg = { workspace = true }
 nih_plug = { git = "https://github.com/robbert-vdh/nih-plug.git" }
+baseview = { git = "https://github.com/RustAudio/baseview.git" }
 #nih_plug_xtask = { path = "../../external/nih-plug/nih_plug_xtask" }
