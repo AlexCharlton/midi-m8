@@ -1,6 +1,52 @@
-use baseview::{Event, EventStatus, Window, WindowHandle, WindowHandler, WindowOpenOptions};
 use nih_plug::prelude::*;
-use std::sync::Arc;
+use std::{marker::PhantomData, sync::Arc};
+
+use lemna::backends::baseview::Window;
+use lemna::{self, widgets, UI, *};
+type Renderer = lemna::render::wgpu::WGPURenderer;
+type Node = lemna::Node<Renderer>;
+
+#[derive(Debug)]
+pub struct HelloApp {}
+
+impl lemna::Component<Renderer> for HelloApp {
+    fn view(&self) -> Option<Node> {
+        Some(
+            node!(
+                widgets::Div::new(),
+                lay!(size: size_pct!(100.0), wrap: true,
+                     padding: rect!(10.0),
+                     axis_alignment: Alignment::Center, cross_alignment: Alignment::Center)
+            )
+            .push(node!(
+                widgets::Div::new().bg(Color::rgb(1.0, 0.0, 0.0)),
+                lay!(size: size!(200.0, 100.0), margin: rect!(5.0)),
+                0
+            ))
+            .push(node!(
+                widgets::Div::new().bg(Color::rgb(0.0, 1.0, 0.0)),
+                lay!(size: size!(100.0), margin: rect!(5.0)),
+                1
+            ))
+            .push(node!(
+                widgets::RoundedRect {
+                    background_color: [0.0, 0.0, 1.0].into(),
+                    border_width: 1.0,
+                    ..Default::default()
+                }
+                .radius(5.0),
+                lay!(size: size!(100.0), margin: rect!(5.0)),
+                2
+            )),
+        )
+    }
+}
+
+impl lemna::App<Renderer> for HelloApp {
+    fn new() -> Self {
+        Self {}
+    }
+}
 
 pub fn create_lemna_editor() -> Option<Box<dyn Editor>> {
     Some(Box::new(LemnaEditor::new()))
@@ -24,18 +70,18 @@ impl Editor for LemnaEditor {
         parent: ParentWindowHandle,
         context: Arc<dyn GuiContext>,
     ) -> Box<dyn std::any::Any + Send> {
-        let settings = WindowOpenOptions {
+        let settings = baseview::WindowOpenOptions {
             title: "test".to_string(),
-            size: baseview::Size::new(100.0, 100.0),
+            size: baseview::Size::new(200.0, 200.0),
             scale: baseview::WindowScalePolicy::SystemScaleFactor,
         };
 
-        let handle = LemnaWindow::open_parented(&parent, settings);
+        let handle = Window::open_parented::<_, Renderer, HelloApp>(&parent, settings);
         Box::new(LemnaEditorHandle { window: handle })
     }
 
     fn size(&self) -> (u32, u32) {
-        (100, 100)
+        (200, 200)
     }
     fn set_scale_factor(&self, factor: f32) -> bool {
         true
@@ -51,31 +97,8 @@ impl Editor for LemnaEditor {
     }
 }
 
-pub struct LemnaWindow {}
-
-impl LemnaWindow {
-    fn new() -> Self {
-        Self {}
-    }
-
-    fn open_parented(parent: &ParentWindowHandle, mut settings: WindowOpenOptions) -> WindowHandle {
-        Window::open_parented(
-            parent,
-            settings,
-            move |window: &mut baseview::Window<'_>| -> LemnaWindow { LemnaWindow::new() },
-        )
-    }
-}
-
-impl WindowHandler for LemnaWindow {
-    fn on_frame(&mut self, window: &mut Window) {}
-    fn on_event(&mut self, _window: &mut Window, event: Event) -> EventStatus {
-        EventStatus::Ignored
-    }
-}
-
 struct LemnaEditorHandle {
-    window: WindowHandle,
+    window: baseview::WindowHandle,
 }
 
 unsafe impl Send for LemnaEditorHandle {}

@@ -9,6 +9,7 @@ license = "MIT"
 crate-type = ["cdylib"]
 
 [dependencies]
+lemna = { path = "../../lemna/", default-features = false, features = ["msaa_shapes", "open_iconic", "baseview"] }
 m8-files = { workspace = true }
 midi-msg = { workspace = true }
 nih_plug = { git = "https://github.com/robbert-vdh/nih-plug.git" }
