@@ -12,6 +12,7 @@ crate-type = ["cdylib"]
 lemna = { path = "../../lemna/", default-features = false, features = ["msaa_shapes", "open_iconic", "baseview"] }
 m8-files = { workspace = true }
 midi-msg = { workspace = true }
-nih_plug = { git = "https://github.com/robbert-vdh/nih-plug.git" }
-baseview = { git = "https://github.com/RustAudio/baseview.git" }
-#nih_plug_xtask = { path = "../../external/nih-plug/nih_plug_xtask" }
+#nih_plug = { git = "https://github.com/robbert-vdh/nih-plug.git" }
+nih_plug = { path = "../../external/nih-plug" }
+# baseview = { git = "https://github.com/RustAudio/baseview.git" }
+baseview = { path = "../../external/baseview/" }
