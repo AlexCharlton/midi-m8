@@ -275,9 +275,9 @@ dependencies = [
 
 [[package]]
 name = "m8-files"
-version = "0.1.3"
+version = "0.2.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "ec4f221488295b915f9cbc60da9d2743f741f5f243e5bc1665dbcba386ae3ffd"
+checksum = "c0aa68cdb443cf5c8d7cdb68a21465e84325cc77a79c4984336b9595ba2d9cce"
 dependencies = [
  "arr_macro",
  "byteorder",

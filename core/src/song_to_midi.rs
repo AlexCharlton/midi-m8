@@ -61,13 +61,13 @@ impl TrackCtx {
     }
 
     fn change_groove(&mut self, step: &Step, song: &Song) {
-        if step.fx1.command == FXCommand::GRV {
+        if step.fx1.command_eq("GRV", song.version) {
             self.groove = song.grooves[step.fx1.value as usize].clone();
         }
-        if step.fx2.command == FXCommand::GRV {
+        if step.fx2.command_eq("GRV", song.version) {
             self.groove = song.grooves[step.fx2.value as usize].clone();
         }
-        if step.fx3.command == FXCommand::GRV {
+        if step.fx3.command_eq("GRV", song.version) {
             self.groove = song.grooves[step.fx3.value as usize].clone();
         }
     }
