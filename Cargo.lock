@@ -297,7 +297,7 @@ checksum = "bc4010833aea396656c2f91ee704d51a6f1329ec2ab56ffd00bfd56f7481ea94"
 
 [[package]]
 name = "midi-m8"
-version = "1.1.0"
+version = "1.2.0"
 dependencies = [
  "clap",
  "human-panic",

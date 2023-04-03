@@ -102,3 +102,6 @@ Alternately you could:
 2. `cargo build --release`
 You'll now have a binary in the `./target/release/` directory.
 
+## Changelog
+### v1.2
+- V3 support
