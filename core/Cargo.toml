@@ -2,6 +2,7 @@
 name = "midi-m8-core"
 version = "1.2.0"
 edition = "2021"
+description = "Core crate for midi-m8. M8 files to MIDI."
 repository = "https://github.com/AlexCharlton/midi-m8"
 license = "MIT"
 
