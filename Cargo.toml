@@ -14,7 +14,7 @@ midi-m8-core = { version = "1.1", path = "./core" }
 m8-files = { workspace = true }
 
 [workspace]
-members = ["core", "plugin", "xtask"]
+members = ["core", "plugin", "plugin/xtask"]
 
 [workspace.dependencies]
 midi-msg = "0.4"

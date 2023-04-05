@@ -191,6 +191,7 @@ dependencies = [
 [[package]]
 name = "baseview"
 version = "0.1.0"
+source = "git+https://github.com/AlexCharlton/baseview.git#8ba63dfaa57c276dd7edabe4bc68c3ff3533aafe"
 dependencies = [
  "cocoa",
  "core-foundation",
@@ -1147,11 +1148,10 @@ checksum = "e2abad23fbc42b3700f2f279844dc832adb2b2eb069b2df918f455c4e18cc646"
 
 [[package]]
 name = "lemna"
-version = "0.1.1"
+version = "0.2.0"
 dependencies = [
  "ab_glyph",
  "ahash 0.3.8",
- "baseview",
  "bytemuck",
  "cgmath",
  "crossbeam-channel 0.4.4",
@@ -1169,8 +1169,16 @@ dependencies = [
  "serde",
  "shaderc",
  "simplelog",
- "ttf-noto-sans",
  "wgpu",
+]
+
+[[package]]
+name = "lemna-baseview"
+version = "0.2.0"
+dependencies = [
+ "baseview",
+ "lemna",
+ "raw-window-handle",
 ]
 
 [[package]]
@@ -1179,6 +1187,15 @@ version = "0.1.0"
 dependencies = [
  "quote",
  "syn",
+]
+
+[[package]]
+name = "lemna-nih-plug"
+version = "0.2.0"
+dependencies = [
+ "lemna",
+ "lemna-baseview",
+ "nih_plug",
 ]
 
 [[package]]
@@ -1395,11 +1412,10 @@ dependencies = [
 name = "midi-m8-plugin"
 version = "1.1.0"
 dependencies = [
- "baseview",
  "lemna",
+ "lemna-nih-plug",
  "m8-files",
  "midi-msg",
- "nih_plug",
 ]
 
 [[package]]
@@ -1459,6 +1475,7 @@ dependencies = [
 [[package]]
 name = "nih_plug"
 version = "0.0.0"
+source = "git+https://github.com/AlexCharlton/nih-plug.git#460ecb073e0982db14322ba35ab34cb574885acb"
 dependencies = [
  "anyhow",
  "anymap",
@@ -1489,6 +1506,7 @@ dependencies = [
 [[package]]
 name = "nih_plug_derive"
 version = "0.1.0"
+source = "git+https://github.com/AlexCharlton/nih-plug.git#460ecb073e0982db14322ba35ab34cb574885acb"
 dependencies = [
  "proc-macro2",
  "quote",
@@ -2251,12 +2269,6 @@ dependencies = [
  "toml_datetime",
  "winnow",
 ]
-
-[[package]]
-name = "ttf-noto-sans"
-version = "0.1.2"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "5e0c7dd9e451dd3a033abddb7fccd79a31eac26ebc97f638132a42dc56cc5cc9"
 
 [[package]]
 name = "ttf-parser"

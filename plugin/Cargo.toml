@@ -9,10 +9,8 @@ license = "MIT"
 crate-type = ["cdylib"]
 
 [dependencies]
-lemna = { path = "../../lemna/", default-features = false, features = ["msaa_shapes", "open_iconic", "baseview"] }
+lemna = { path = "../../lemna/", default-features = false, features = ["msaa_shapes", "open_iconic"] }
+lemna-nih-plug = { path = "../../lemna/nih-plug" }
 m8-files = { workspace = true }
 midi-msg = { workspace = true }
-#nih_plug = { git = "https://github.com/robbert-vdh/nih-plug.git" }
-nih_plug = { path = "../../external/nih-plug" }
-# baseview = { git = "https://github.com/RustAudio/baseview.git" }
-baseview = { path = "../../external/baseview/" }
+# nih_plug = { path = "../../external/nih-plug" }
