@@ -49,7 +49,7 @@ impl lemna::App<Renderer> for HelloApp {
 }
 
 #[derive(Default)]
-struct M8Plug {
+pub struct M8Plug {
     params: Arc<M8Params>,
 }
 
