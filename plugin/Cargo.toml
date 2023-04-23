@@ -10,9 +10,9 @@ crate-type = ["cdylib", "lib"]
 
 [dependencies]
 # lemna = { path = "../../lemna/" }
-# lemna-nih-plug = { path = "../../lemna/nih-plug" }
+# lemna-nih-plug = { path = "../../lemna/nih-plug", features = ["standalone"] }
 lemna = { git = "https://github.com/AlexCharlton/lemna.git" }
 lemna-nih-plug = { git = "https://github.com/AlexCharlton/lemna.git" , features = ["standalone"] }
 m8-files = { workspace = true }
 midi-msg = { workspace = true }
-# nih_plug = { path = "../../external/nih-plug" }
+ttf-noto-sans = "0.1"

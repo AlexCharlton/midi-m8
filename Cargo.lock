@@ -233,7 +233,7 @@ dependencies = [
 [[package]]
 name = "baseview"
 version = "0.1.0"
-source = "git+https://github.com/AlexCharlton/baseview.git#224a1f9593217737444cae37cfed46eb070d7104"
+source = "git+https://github.com/AlexCharlton/baseview.git#7b48f6d864b57f71d1b17b2ff7f46c21272997fe"
 dependencies = [
  "cocoa",
  "core-foundation",
@@ -1522,7 +1522,7 @@ checksum = "830d08ce1d1d941e6b30645f1a0eb5643013d835ce3779a5fc208261dbe10f55"
 [[package]]
 name = "lemna"
 version = "0.2.1"
-source = "git+https://github.com/AlexCharlton/lemna.git#2d0844ee12b7acc95e44115983ee154748c5e568"
+source = "git+https://github.com/AlexCharlton/lemna.git#e8446f894d2cffc2ac660d1e0caeb5baf48b7bc3"
 dependencies = [
  "ab_glyph",
  "ahash 0.3.8",
@@ -1550,7 +1550,7 @@ dependencies = [
 [[package]]
 name = "lemna-baseview"
 version = "0.2.0"
-source = "git+https://github.com/AlexCharlton/lemna.git#2d0844ee12b7acc95e44115983ee154748c5e568"
+source = "git+https://github.com/AlexCharlton/lemna.git#e8446f894d2cffc2ac660d1e0caeb5baf48b7bc3"
 dependencies = [
  "arboard",
  "baseview",
@@ -1562,7 +1562,7 @@ dependencies = [
 [[package]]
 name = "lemna-macros"
 version = "0.2.0"
-source = "git+https://github.com/AlexCharlton/lemna.git#2d0844ee12b7acc95e44115983ee154748c5e568"
+source = "git+https://github.com/AlexCharlton/lemna.git#e8446f894d2cffc2ac660d1e0caeb5baf48b7bc3"
 dependencies = [
  "quote",
  "syn",
@@ -1571,7 +1571,7 @@ dependencies = [
 [[package]]
 name = "lemna-nih-plug"
 version = "0.2.0"
-source = "git+https://github.com/AlexCharlton/lemna.git#2d0844ee12b7acc95e44115983ee154748c5e568"
+source = "git+https://github.com/AlexCharlton/lemna.git#e8446f894d2cffc2ac660d1e0caeb5baf48b7bc3"
 dependencies = [
  "lemna",
  "lemna-baseview",
@@ -1811,6 +1811,7 @@ dependencies = [
  "lemna-nih-plug",
  "m8-files",
  "midi-msg",
+ "ttf-noto-sans",
 ]
 
 [[package]]
@@ -2964,6 +2965,12 @@ dependencies = [
  "toml_datetime",
  "winnow",
 ]
+
+[[package]]
+name = "ttf-noto-sans"
+version = "0.1.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "5e0c7dd9e451dd3a033abddb7fccd79a31eac26ebc97f638132a42dc56cc5cc9"
 
 [[package]]
 name = "ttf-parser"
