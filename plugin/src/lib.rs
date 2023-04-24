@@ -172,7 +172,8 @@ impl Plugin for M8Plug {
     const VERSION: &'static str = env!("CARGO_PKG_VERSION");
 
     const AUDIO_IO_LAYOUTS: &'static [AudioIOLayout] = &[];
-    const MIDI_INPUT: MidiConfig = MidiConfig::None;
+    const MIDI_INPUT: MidiConfig = MidiConfig::MidiCCs;
+    const MIDI_OUTPUT: MidiConfig = MidiConfig::MidiCCs;
 
     type SysExMessage = ();
     type BackgroundTask = ();
@@ -191,11 +192,14 @@ impl Plugin for M8Plug {
     }
 
     fn editor(&self, _async_executor: AsyncExecutor<Self>) -> Option<Box<dyn Editor>> {
-        lemna_nih_plug::create_lemna_editor::<Renderer, M8PlugApp>(
+        lemna_nih_plug::create_lemna_editor::<Renderer, M8PlugApp, _>(
             "Midi M8",
             400,
             300,
             vec![("noto sans regular".to_string(), ttf_noto_sans::REGULAR)],
+            |_ctx, _ui| {
+                // TODO
+            },
         )
     }
 }

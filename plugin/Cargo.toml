@@ -13,6 +13,7 @@ crate-type = ["cdylib", "lib"]
 # lemna-nih-plug = { path = "../../lemna/nih-plug", features = ["standalone"] }
 lemna = { git = "https://github.com/AlexCharlton/lemna.git" }
 lemna-nih-plug = { git = "https://github.com/AlexCharlton/lemna.git" , features = ["standalone"] }
+log = { version = "0.4", features = ["max_level_warn", "release_max_level_error"] }
 m8-files = { workspace = true }
 midi-msg = { workspace = true }
 ttf-noto-sans = "0.1"
