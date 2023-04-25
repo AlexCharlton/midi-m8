@@ -1522,7 +1522,7 @@ checksum = "830d08ce1d1d941e6b30645f1a0eb5643013d835ce3779a5fc208261dbe10f55"
 [[package]]
 name = "lemna"
 version = "0.2.1"
-source = "git+https://github.com/AlexCharlton/lemna.git#96573edca35ae86e588438275a264aa110175357"
+source = "git+https://github.com/AlexCharlton/lemna.git#1b3081aed36c9571a776c3d2f977f808841af2ed"
 dependencies = [
  "ab_glyph",
  "ahash 0.3.8",
@@ -1550,7 +1550,7 @@ dependencies = [
 [[package]]
 name = "lemna-baseview"
 version = "0.2.0"
-source = "git+https://github.com/AlexCharlton/lemna.git#96573edca35ae86e588438275a264aa110175357"
+source = "git+https://github.com/AlexCharlton/lemna.git#1b3081aed36c9571a776c3d2f977f808841af2ed"
 dependencies = [
  "arboard",
  "baseview",
@@ -1563,7 +1563,7 @@ dependencies = [
 [[package]]
 name = "lemna-macros"
 version = "0.2.0"
-source = "git+https://github.com/AlexCharlton/lemna.git#96573edca35ae86e588438275a264aa110175357"
+source = "git+https://github.com/AlexCharlton/lemna.git#1b3081aed36c9571a776c3d2f977f808841af2ed"
 dependencies = [
  "quote",
  "syn",
@@ -1572,7 +1572,7 @@ dependencies = [
 [[package]]
 name = "lemna-nih-plug"
 version = "0.2.0"
-source = "git+https://github.com/AlexCharlton/lemna.git#96573edca35ae86e588438275a264aa110175357"
+source = "git+https://github.com/AlexCharlton/lemna.git#1b3081aed36c9571a776c3d2f977f808841af2ed"
 dependencies = [
  "crossbeam-channel 0.4.4",
  "lemna",
@@ -1814,7 +1814,6 @@ dependencies = [
  "log",
  "m8-files",
  "midi-msg",
- "ttf-noto-sans",
 ]
 
 [[package]]
@@ -2968,12 +2967,6 @@ dependencies = [
  "toml_datetime",
  "winnow",
 ]
-
-[[package]]
-name = "ttf-noto-sans"
-version = "0.1.2"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "5e0c7dd9e451dd3a033abddb7fccd79a31eac26ebc97f638132a42dc56cc5cc9"
 
 [[package]]
 name = "ttf-parser"

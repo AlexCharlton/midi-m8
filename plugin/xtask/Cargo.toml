@@ -4,4 +4,3 @@ version = "0.0.0"
 
 [dependencies]
 nih_plug_xtask = { git = "https://github.com/robbert-vdh/nih-plug.git" }
-#nih_plug_xtask = { path = "../../external/nih-plug/nih_plug_xtask" }

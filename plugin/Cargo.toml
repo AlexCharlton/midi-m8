@@ -16,4 +16,3 @@ lemna-nih-plug = { git = "https://github.com/AlexCharlton/lemna.git" , features 
 log = { version = "0.4", features = ["max_level_warn", "release_max_level_error"] }
 m8-files = { workspace = true }
 midi-msg = { workspace = true }
-ttf-noto-sans = "0.1"
