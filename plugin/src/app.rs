@@ -2,6 +2,7 @@ use std::fmt;
 use std::path::PathBuf;
 use std::sync::Arc;
 
+use lemna::open_iconic::Icon;
 use lemna::{self, widgets, *};
 use lemna_nih_plug::nih_plug;
 use lemna_nih_plug::nih_plug::{
@@ -101,11 +102,31 @@ impl lemna::Component<Renderer> for M8PlugApp {
                 2
             ))
             // Footer
-            .push(node!(
-                widgets::Div::new().bg([0.0, 0.5, 0.5]),
-                lay!(size: size!(Auto, 30.0)),
-                3
-            )),
+            .push(
+                node!(
+                    widgets::Div::new(),
+                    lay!(
+                        size: size!(Auto, 30.0),
+                        direction: Direction::Row,
+                        padding: rect!(5.0),
+                    ),
+                    3
+                )
+                .push(node!(Info {}))
+                .push(node!(
+                    widgets::Text::new(
+                        txt!(format!("MIDIM8 V{}", env!("CARGO_PKG_VERSION"))),
+                        TextStyle {
+                            color: BLUE,
+                            ..Default::default()
+                        }
+                    ),
+                    lay!(
+                        position_type: PositionType::Absolute,
+                        position: rect!(Auto, Auto, Auto, 0.0)
+                    )
+                )),
+            ),
         )
     }
 
@@ -124,5 +145,25 @@ impl lemna::Component<Renderer> for M8PlugApp {
 impl lemna::App<Renderer> for M8PlugApp {
     fn new() -> Self {
         Self { state: None }
+    }
+}
+
+#[derive(Debug)]
+struct Info {}
+
+impl lemna::Component<Renderer> for Info {
+    // TODO Add a tooltip
+    fn view(&self) -> Option<Node> {
+        Some(node!(
+            widgets::Text::new(
+                txt!((Icon::QuestionMark, "open iconic")),
+                TextStyle {
+                    color: BLUE,
+                    size: 9.0,
+                    ..Default::default()
+                }
+            ),
+            lay!(margin: rect!(1.0, 5.0))
+        ))
     }
 }

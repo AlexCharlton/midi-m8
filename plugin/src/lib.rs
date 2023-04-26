@@ -1,3 +1,4 @@
+use lemna::open_iconic;
 use lemna_nih_plug::nih_plug;
 use nih_plug::prelude::*;
 use std::sync::Arc;
@@ -50,10 +51,13 @@ impl Plugin for M8Plug {
             "Midi M8",
             400,
             300,
-            vec![(
-                "Roboto".into(),
-                include_bytes!("../include/RobotoMono-SemiBold.ttf"),
-            )],
+            vec![
+                (
+                    "Roboto".into(),
+                    include_bytes!("../include/RobotoMono-Regular.ttf"),
+                ),
+                ("open iconic".to_string(), open_iconic::ICONS),
+            ],
             move |ctx, ui| {
                 ui.with_app_state::<AppState, _>(|s| {
                     s.gui_context = Some(ctx.clone());

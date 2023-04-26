@@ -16,9 +16,6 @@ impl Parameters {
 
 impl lemna::Component<Renderer> for Parameters {
     fn view(&self) -> Option<Node> {
-        Some(node!(
-            widgets::Div::new().bg([1.0, 0.0, 1.0]),
-            lay!(size: size_pct!(100.0))
-        ))
+        Some(node!(widgets::Div::new(), lay!(size: size_pct!(100.0))))
     }
 }
