@@ -2,8 +2,12 @@ use lemna_nih_plug::nih_plug;
 use nih_plug::prelude::*;
 use std::sync::Arc;
 
+mod drag_sources;
+mod file_selection;
+mod parameters;
+
 mod app;
-use app::{AppState, M8Params, M8PlugApp, Renderer};
+use app::*;
 
 nih_export_clap!(M8Plug);
 nih_export_vst3!(M8Plug);

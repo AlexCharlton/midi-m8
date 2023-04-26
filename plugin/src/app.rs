@@ -8,14 +8,19 @@ use lemna_nih_plug::nih_plug::{
     context::gui::GuiContext,
     params::{range::*, *},
 };
+use m8_files::Song;
+
+use crate::drag_sources::*;
+use crate::file_selection::*;
+use crate::parameters::*;
 
 pub type Renderer = lemna::render::wgpu::WGPURenderer;
-type Node = lemna::Node<Renderer>;
+pub type Node = lemna::Node<Renderer>;
 
-const DARK_GRAY: Color = color!(0x16, 0x16, 0x16);
-const MID_GRAY: Color = color!(0x5F, 0x5F, 0x5F);
-const LIGHT_GRAY: Color = color!(0xDE, 0xDE, 0xDE);
-const BLUE: Color = color!(0x00, 0xE5, 0xEE);
+pub const DARK_GRAY: Color = color!(0x16, 0x16, 0x16);
+pub const MID_GRAY: Color = color!(0x5F, 0x5F, 0x5F);
+pub const LIGHT_GRAY: Color = color!(0xDE, 0xDE, 0xDE);
+pub const BLUE: Color = color!(0x00, 0xE5, 0xEE);
 
 #[derive(Params, Debug)]
 pub struct M8Params {
@@ -48,6 +53,7 @@ pub struct AppState {
     pub params: Arc<M8Params>,
     pub gui_context: Option<Arc<dyn GuiContext>>,
     file: Option<PathBuf>,
+    song: Option<Arc<Song>>,
 }
 
 impl fmt::Debug for AppState {
@@ -72,18 +78,33 @@ impl lemna::Component<Renderer> for M8PlugApp {
         Some(
             node!(
                 widgets::Div::new().bg(DARK_GRAY),
-                lay!(size: size_pct!(100.0), wrap: true,
-                     padding: rect!(10.0),
-                     axis_alignment: Alignment::Center, cross_alignment: Alignment::Center)
+                lay!(
+                    size: size_pct!(100.0),
+                    direction: Direction::Column,
+                    axis_alignment: Alignment::Stretch,
+                    cross_alignment: Alignment::Stretch
+                )
             )
-            // Fileselector
-            // Parameters
-            // TrackDraggers
+            .push(node!(
+                FileSelection::new(self.state_ref().file.clone()),
+                lay!(size: size!(Auto, 30.0)),
+                0
+            ))
+            .push(node!(
+                Parameters::new(self.state_ref().params.clone()),
+                lay!(size: size!(Auto, 90.0)),
+                1
+            ))
+            .push(node!(
+                DragSources::new(self.state_ref().song.clone()),
+                lay!(size: size!(Auto, 150.0)),
+                2
+            ))
             // Footer
             .push(node!(
-                AllTracksDragSource {},
-                lay!(size: size!(Auto, 100.0)),
-                0
+                widgets::Div::new().bg([0.0, 0.5, 0.5]),
+                lay!(size: size!(Auto, 30.0)),
+                3
             )),
         )
     }
@@ -103,44 +124,5 @@ impl lemna::Component<Renderer> for M8PlugApp {
 impl lemna::App<Renderer> for M8PlugApp {
     fn new() -> Self {
         Self { state: None }
-    }
-}
-
-/// DragSource
-
-#[derive(Debug)]
-pub struct AllTracksDragSource {}
-
-impl Component<Renderer> for AllTracksDragSource {
-    fn view(&self) -> Option<Node> {
-        Some(
-            node!(
-                widgets::Div::new().bg(BLUE).border(MID_GRAY, 2.0),
-                lay!(
-                    size: size_pct!(100.0),
-                    margin: rect!(10.0),
-                    padding: rect!(5.0),
-                    cross_alignment: layout::Alignment::Center,
-                    axis_alignment: layout::Alignment::Center
-                ),
-                0
-            )
-            .push(node!(widgets::Text::new(
-                txt!("ALL TRACKS"),
-                widgets::TextStyle {
-                    h_alignment: HorizontalAlign::Center,
-                    color: DARK_GRAY,
-                    ..widgets::TextStyle::default()
-                }
-            ))),
-        )
-    }
-
-    fn on_drag_start(&mut self, event: &mut Event<event::DragStart>) -> Vec<Message> {
-        current_window()
-            .unwrap()
-            .start_drag(Data::Filepath("/test/file.txt".into()));
-        event.stop_bubbling();
-        vec![]
     }
 }
