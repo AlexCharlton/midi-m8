@@ -3,7 +3,7 @@ use nih_plug::prelude::*;
 use std::sync::Arc;
 
 mod app;
-use app::{M8PlugApp, Renderer};
+use app::{AppState, M8Params, M8PlugApp, Renderer};
 
 nih_export_clap!(M8Plug);
 nih_export_vst3!(M8Plug);
@@ -12,9 +12,6 @@ nih_export_vst3!(M8Plug);
 pub struct M8Plug {
     params: Arc<M8Params>,
 }
-
-#[derive(Params, Default)]
-struct M8Params {}
 
 impl Plugin for M8Plug {
     const NAME: &'static str = "MidiM8";
@@ -44,6 +41,7 @@ impl Plugin for M8Plug {
     }
 
     fn editor(&self, _async_executor: AsyncExecutor<Self>) -> Option<Box<dyn Editor>> {
+        let app_params = self.params.clone();
         lemna_nih_plug::create_lemna_editor::<Renderer, M8PlugApp, _>(
             "Midi M8",
             400,
@@ -52,8 +50,11 @@ impl Plugin for M8Plug {
                 "Roboto".into(),
                 include_bytes!("../include/RobotoMono-SemiBold.ttf"),
             )],
-            |_ctx, _ui| {
-                // TODO
+            move |ctx, ui| {
+                ui.with_app_state::<AppState, _>(|s| {
+                    s.gui_context = Some(ctx.clone());
+                    s.params = app_params.clone()
+                });
             },
         )
     }
