@@ -2,7 +2,6 @@ use std::fmt;
 use std::path::PathBuf;
 use std::sync::Arc;
 
-use lemna::open_iconic::Icon;
 use lemna::{self, widgets, *};
 use lemna_nih_plug::nih_plug;
 use lemna_nih_plug::nih_plug::{
@@ -112,7 +111,25 @@ impl lemna::Component<Renderer> for M8PlugApp {
                     ),
                     3
                 )
-                .push(node!(Info {}))
+                .push(node!(widgets::Button::new(
+                    txt!("?"),
+                    ButtonStyle {
+                        text_color: BLUE,
+                        background_color: DARK_GRAY,
+                        highlight_color: DARK_GRAY,
+                        active_color: DARK_GRAY,
+                        border_color: BLUE,
+                        radius: 16.0,
+                        padding: 1.5,
+                        tool_tip_style: ToolTipStyle {
+                            text_color: LIGHT_GRAY,
+                            background_color: MID_GRAY,
+                            border_color: DARK_GRAY,
+                            ..Default::default()
+                        },
+                        ..Default::default()
+                    },
+                ).tool_tip("Select or drag a M8 song file. Then drag the MIDI data from the desired track or all tracks.\n\nYou can adjust the max note length, the starting song position, and the amount by which to transpose M8 note numbers to turn them into MIDI note numbers (default is 36).".into())))
                 .push(node!(
                     widgets::Text::new(
                         txt!(format!("MIDIM8 V{}", env!("CARGO_PKG_VERSION"))),
@@ -145,25 +162,5 @@ impl lemna::Component<Renderer> for M8PlugApp {
 impl lemna::App<Renderer> for M8PlugApp {
     fn new() -> Self {
         Self { state: None }
-    }
-}
-
-#[derive(Debug)]
-struct Info {}
-
-impl lemna::Component<Renderer> for Info {
-    // TODO Add a tooltip
-    fn view(&self) -> Option<Node> {
-        Some(node!(
-            widgets::Text::new(
-                txt!((Icon::QuestionMark, "open iconic")),
-                TextStyle {
-                    color: BLUE,
-                    size: 9.0,
-                    ..Default::default()
-                }
-            ),
-            lay!(margin: rect!(1.0, 5.0))
-        ))
     }
 }
