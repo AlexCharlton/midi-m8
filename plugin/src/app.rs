@@ -48,6 +48,11 @@ impl Default for M8Params {
     }
 }
 
+#[derive(Debug)]
+pub enum AppMsg {
+    FileSelected { selection: Option<PathBuf> },
+}
+
 #[derive(Default)]
 pub struct AppState {
     pub params: Arc<M8Params>,
@@ -148,14 +153,43 @@ impl lemna::Component<Renderer> for M8PlugApp {
     }
 
     fn on_drag_drop(&mut self, event: &mut Event<event::DragDrop>) -> Vec<Message> {
-        // TODO
+        match &event.input.0 {
+            Data::Filepath(p) if p.extension().map(|e| e == "m8s").unwrap_or(false) => {
+                self.state_mut().file = Some(p.clone());
+                self.update_song();
+                event.dirty();
+            }
+            _ => (),
+        }
         vec![]
     }
 
-    fn on_drag_target(&mut self, _event: &mut Event<event::DragTarget>) -> Vec<Message> {
-        // TODO Evaluate file type
-        current_window().unwrap().set_drop_target_valid(true);
+    fn on_drag_enter(&mut self, event: &mut Event<event::DragEnter>) -> Vec<Message> {
+        let contains_m8_song = event.input.0.iter().any(|f| match f {
+            Data::Filepath(p) => p.extension().map(|e| e == "m8s").unwrap_or(false),
+            _ => false,
+        });
+        current_window()
+            .unwrap()
+            .set_drop_target_valid(contains_m8_song);
         vec![]
+    }
+
+    fn update(&mut self, message: Message) -> Vec<Message> {
+        match message.downcast_ref::<AppMsg>() {
+            Some(AppMsg::FileSelected { selection: f }) => {
+                self.state_mut().file = f.clone();
+                self.update_song();
+            }
+            _ => (),
+        }
+        vec![]
+    }
+}
+
+impl M8PlugApp {
+    fn update_song(&mut self) {
+        // TODO
     }
 }
 
