@@ -10,8 +10,8 @@ keywords = ["music"]
 [dependencies]
 clap = { version = "4.1", features = ["derive"] }
 human-panic = { version = "1.1", features = ["color"] }
-midi-m8-core = { version = "1.1", path = "./core" }
 m8-files = { workspace = true }
+midi-m8-core = { workspace = true }
 
 [workspace]
 members = ["core", "plugin", "plugin/xtask"]
@@ -19,3 +19,4 @@ members = ["core", "plugin", "plugin/xtask"]
 [workspace.dependencies]
 midi-msg = "0.4"
 m8-files = "0.2"
+midi-m8-core = { version = "1.1", path = "./core" }

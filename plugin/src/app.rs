@@ -1,4 +1,6 @@
+use std::error::Error;
 use std::fmt;
+use std::fs::File;
 use std::path::PathBuf;
 use std::sync::Arc;
 
@@ -9,6 +11,7 @@ use lemna_nih_plug::nih_plug::{
     params::{range::*, *},
 };
 use m8_files::Song;
+use midi_m8_core::song_to_midi::*;
 
 use crate::drag_sources::*;
 use crate::file_selection::*;
@@ -59,6 +62,7 @@ pub struct AppState {
     pub gui_context: Option<Arc<dyn GuiContext>>,
     file: Option<PathBuf>,
     song: Option<Arc<Song>>,
+    error: Option<String>, // TODO
 }
 
 impl fmt::Debug for AppState {
@@ -156,7 +160,8 @@ impl lemna::Component<Renderer> for M8PlugApp {
         match &event.input.0 {
             Data::Filepath(p) if p.extension().map(|e| e == "m8s").unwrap_or(false) => {
                 self.state_mut().file = Some(p.clone());
-                self.update_song();
+                self.update_song()
+                    .map_err(|e| self.state_mut().error = Some(e.to_string()));
                 event.dirty();
             }
             _ => (),
@@ -179,7 +184,8 @@ impl lemna::Component<Renderer> for M8PlugApp {
         match message.downcast_ref::<AppMsg>() {
             Some(AppMsg::FileSelected { selection: f }) => {
                 self.state_mut().file = f.clone();
-                self.update_song();
+                self.update_song()
+                    .map_err(|e| self.state_mut().error = Some(e.to_string()));
             }
             _ => (),
         }
@@ -188,8 +194,16 @@ impl lemna::Component<Renderer> for M8PlugApp {
 }
 
 impl M8PlugApp {
-    fn update_song(&mut self) {
-        // TODO
+    fn update_song(&mut self) -> Result<(), Box<dyn Error>> {
+        if let Some(p) = &self.state_ref().file {
+            let mut f = File::open(p)?;
+            let song = Song::read(&mut f)?;
+            self.state_mut().song = Some(Arc::new(song));
+        } else {
+            self.state_mut().song = None;
+        }
+        // TODO create midi data
+        Ok(())
     }
 }
 

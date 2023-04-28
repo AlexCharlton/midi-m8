@@ -1813,6 +1813,7 @@ dependencies = [
  "lemna-nih-plug",
  "log",
  "m8-files",
+ "midi-m8-core",
  "midi-msg",
 ]
 
