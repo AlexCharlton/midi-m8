@@ -2,7 +2,6 @@ use std::sync::Arc;
 
 use crate::{app::*, Node, Renderer};
 use lemna::{self, widgets, *};
-use temp_file::TempFile;
 
 #[derive(Debug)]
 pub struct DragSources {

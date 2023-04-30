@@ -233,7 +233,7 @@ dependencies = [
 [[package]]
 name = "baseview"
 version = "0.1.0"
-source = "git+https://github.com/AlexCharlton/baseview.git#7b48f6d864b57f71d1b17b2ff7f46c21272997fe"
+source = "git+https://github.com/AlexCharlton/baseview.git#d834d583dd797c35f533f850ee06df0eb37965ca"
 dependencies = [
  "cocoa",
  "core-foundation",
@@ -1522,7 +1522,7 @@ checksum = "830d08ce1d1d941e6b30645f1a0eb5643013d835ce3779a5fc208261dbe10f55"
 [[package]]
 name = "lemna"
 version = "0.2.1"
-source = "git+https://github.com/AlexCharlton/lemna.git#6ad682bb99f809c17368bccba09eab73176c45d2"
+source = "git+https://github.com/AlexCharlton/lemna.git#e3befc01af13764cc43024c34ee95f2b038ecaee"
 dependencies = [
  "ab_glyph",
  "ahash 0.3.8",
@@ -1550,7 +1550,7 @@ dependencies = [
 [[package]]
 name = "lemna-baseview"
 version = "0.2.0"
-source = "git+https://github.com/AlexCharlton/lemna.git#6ad682bb99f809c17368bccba09eab73176c45d2"
+source = "git+https://github.com/AlexCharlton/lemna.git#e3befc01af13764cc43024c34ee95f2b038ecaee"
 dependencies = [
  "arboard",
  "baseview",
@@ -1563,7 +1563,7 @@ dependencies = [
 [[package]]
 name = "lemna-macros"
 version = "0.2.0"
-source = "git+https://github.com/AlexCharlton/lemna.git#6ad682bb99f809c17368bccba09eab73176c45d2"
+source = "git+https://github.com/AlexCharlton/lemna.git#e3befc01af13764cc43024c34ee95f2b038ecaee"
 dependencies = [
  "quote",
  "syn",
@@ -1572,7 +1572,7 @@ dependencies = [
 [[package]]
 name = "lemna-nih-plug"
 version = "0.2.0"
-source = "git+https://github.com/AlexCharlton/lemna.git#6ad682bb99f809c17368bccba09eab73176c45d2"
+source = "git+https://github.com/AlexCharlton/lemna.git#e3befc01af13764cc43024c34ee95f2b038ecaee"
 dependencies = [
  "crossbeam-channel 0.4.4",
  "lemna",

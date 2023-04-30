@@ -18,7 +18,7 @@ pub struct M8Plug {
 }
 
 impl Plugin for M8Plug {
-    const NAME: &'static str = "MidiM8";
+    const NAME: &'static str = "MIDI-M8";
     const VENDOR: &'static str = "ANC";
     const URL: &'static str = "https://github.com/AlexCharlton/midi-m8";
     const EMAIL: &'static str = "alex.n.charlton@gmail.com";
@@ -73,6 +73,6 @@ impl ClapPlugin for M8Plug {
 }
 
 impl Vst3Plugin for M8Plug {
-    const VST3_CLASS_ID: [u8; 16] = *b"ANC-Midi-M8-Plug";
+    const VST3_CLASS_ID: [u8; 16] = *b"ANC-MIDI-M8-Plug";
     const VST3_SUBCATEGORIES: &'static [Vst3SubCategory] = &[Vst3SubCategory::Tools];
 }
