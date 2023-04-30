@@ -2,6 +2,7 @@ use lemna_nih_plug::nih_plug;
 use nih_plug::prelude::*;
 use std::sync::Arc;
 
+mod basic_param;
 mod drag_sources;
 mod file_selection;
 mod parameters;

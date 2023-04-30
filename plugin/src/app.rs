@@ -12,7 +12,7 @@ use lemna_nih_plug::nih_plug::{
 };
 use m8_files::Song;
 use midi_m8_core::midi_file::MidiFile;
-use midi_m8_core::song_to_midi::{song_to_midi_file, Config};
+use midi_m8_core::song_to_midi::{song_to_midi_file, Config, TICKS_PER_QUARTER_NOTE};
 use temp_file::TempFile;
 
 use crate::drag_sources::*;
@@ -30,26 +30,91 @@ pub const BLUE: Color = color!(0x00, 0xE5, 0xEE);
 #[derive(Params, Debug)]
 pub struct M8Params {
     #[id = "start"]
-    pub start: IntParam,
+    pub start: Arc<IntParam>,
     #[id = "max_len"]
-    pub max_len: FloatParam,
+    pub max_len: Arc<FloatParam>,
     #[id = "transpose"]
-    pub transpose: IntParam,
+    pub transpose: Arc<IntParam>,
 }
 
 impl Default for M8Params {
     fn default() -> Self {
         Self {
-            start: IntParam::new("Start", 0, IntRange::Linear { min: 0, max: 255 }),
-            // TODO with_value_to_string
-            max_len: FloatParam::new(
-                "Max Note Length",
-                0.0,
-                FloatRange::Linear { min: 0.0, max: 4.0 },
-            )
-            .with_step_size(1.0 / 16.0),
-            transpose: IntParam::new("Transpose", 36, IntRange::Linear { min: 0, max: 72 }),
+            start: Arc::new(IntParam::new(
+                "Start",
+                0,
+                IntRange::Linear { min: 0, max: 255 },
+            )),
+            max_len: Arc::new(
+                FloatParam::new(
+                    "Max Note Length",
+                    0.0,
+                    FloatRange::Linear { min: 0.0, max: 4.0 },
+                )
+                .with_value_to_string(Arc::new(|v| {
+                    if v == 0.0 {
+                        "--".into()
+                    } else {
+                        note_len_to_string(v)
+                    }
+                }))
+                .with_step_size(1.0 / 16.0),
+            ),
+            transpose: Arc::new(IntParam::new(
+                "Transpose",
+                36,
+                IntRange::Linear { min: 0, max: 72 },
+            )),
         }
+    }
+}
+
+fn note_len_to_string(v: f32) -> String {
+    let whole_notes = v.floor();
+    let fractional = v - whole_notes;
+    let fract = if fractional < 0.0001 {
+        ""
+    } else if fractional <= 1.0 / 16.0 {
+        "1/16"
+    } else if fractional <= 2.0 / 16.0 {
+        "1/8"
+    } else if fractional <= 3.0 / 16.0 {
+        "1/8."
+    } else if fractional <= 4.0 / 16.0 {
+        "1/4"
+    } else if fractional <= 5.0 / 16.0 {
+        "5/16"
+    } else if fractional <= 6.0 / 16.0 {
+        "1/4."
+    } else if fractional <= 7.0 / 16.0 {
+        "7/16"
+    } else if fractional <= 8.0 / 16.0 {
+        "1/2"
+    } else if fractional <= 9.0 / 16.0 {
+        "9/16"
+    } else if fractional <= 10.0 / 16.0 {
+        "5/8"
+    } else if fractional <= 11.0 / 16.0 {
+        "11/16"
+    } else if fractional <= 12.0 / 16.0 {
+        "3/4"
+    } else if fractional <= 13.0 / 16.0 {
+        "13/16"
+    } else if fractional <= 14.0 / 16.0 {
+        "7/8"
+    } else if fractional <= 15.0 / 16.0 {
+        "15/16"
+    } else {
+        ""
+    };
+
+    let whole_notes = whole_notes as u32;
+    if whole_notes > 0 && fract != "" {
+        format!("{whole_notes} {fract}")
+    } else if whole_notes > 0 {
+        format!("{whole_notes}")
+    } else {
+        format!("{fract}")
     }
 }
 
@@ -220,9 +285,19 @@ impl M8PlugApp {
             let mut f = File::open(p)?;
             let song = Song::read(&mut f)?;
             let mut config = Config {
-                // TODO
+                start_from: self.state_ref().params.start.value() as u8,
+                global_transpose: self.state_ref().params.transpose.value() as i16,
                 ..Config::default()
             };
+
+            let max_len = self.state_ref().params.max_len.value();
+            if max_len > 0.0 {
+                for i in 0..8 {
+                    config.max_note_length[i] = (self.state_ref().params.max_len.value()
+                        * TICKS_PER_QUARTER_NOTE as f32)
+                        as u32;
+                }
+            }
 
             let midi_file = song_to_midi_file(&song, &config);
             self.state_mut().song = Some(Arc::new(Self::midi_file_to_paths(midi_file)?));
