@@ -11,7 +11,9 @@ use lemna_nih_plug::nih_plug::{
     params::{range::*, *},
 };
 use m8_files::Song;
-use midi_m8_core::song_to_midi::*;
+use midi_m8_core::midi_file::MidiFile;
+use midi_m8_core::song_to_midi::{song_to_midi_file, Config};
+use temp_file::{self, TempFile};
 
 use crate::drag_sources::*;
 use crate::file_selection::*;
@@ -52,6 +54,12 @@ impl Default for M8Params {
 }
 
 #[derive(Debug)]
+pub struct MidiTempFiles {
+    pub all: TempFile,
+    pub tracks: [Option<TempFile>; 8],
+}
+
+#[derive(Debug)]
 pub enum AppMsg {
     FileSelected { selection: Option<PathBuf> },
 }
@@ -61,7 +69,7 @@ pub struct AppState {
     pub params: Arc<M8Params>,
     pub gui_context: Option<Arc<dyn GuiContext>>,
     file: Option<PathBuf>,
-    song: Option<Arc<Song>>,
+    song: Option<Arc<MidiTempFiles>>,
     error: Option<String>, // TODO
 }
 
@@ -160,8 +168,10 @@ impl lemna::Component<Renderer> for M8PlugApp {
         match &event.input.0 {
             Data::Filepath(p) if p.extension().map(|e| e == "m8s").unwrap_or(false) => {
                 self.state_mut().file = Some(p.clone());
-                self.update_song()
-                    .map_err(|e| self.state_mut().error = Some(e.to_string()));
+                match self.update_song() {
+                    Err(e) => self.state_mut().error = Some(e.to_string()),
+                    Ok(_) => (),
+                }
                 event.dirty();
             }
             _ => (),
@@ -184,8 +194,10 @@ impl lemna::Component<Renderer> for M8PlugApp {
         match message.downcast_ref::<AppMsg>() {
             Some(AppMsg::FileSelected { selection: f }) => {
                 self.state_mut().file = f.clone();
-                self.update_song()
-                    .map_err(|e| self.state_mut().error = Some(e.to_string()));
+                match self.update_song() {
+                    Err(e) => self.state_mut().error = Some(e.to_string()),
+                    Ok(_) => (),
+                }
             }
             _ => (),
         }
@@ -198,12 +210,34 @@ impl M8PlugApp {
         if let Some(p) = &self.state_ref().file {
             let mut f = File::open(p)?;
             let song = Song::read(&mut f)?;
-            self.state_mut().song = Some(Arc::new(song));
+            let mut config = Config {
+                // TODO
+                ..Config::default()
+            };
+
+            let midi_file = song_to_midi_file(&song, &config);
+            self.state_mut().song = Some(Arc::new(Self::midi_file_to_paths(midi_file)?));
         } else {
             self.state_mut().song = None;
         }
-        // TODO create midi data
         Ok(())
+    }
+
+    fn midi_file_to_paths(midi_file: MidiFile) -> Result<MidiTempFiles, Box<dyn Error>> {
+        let all = midi_file.to_midi();
+        let mut f = MidiTempFiles {
+            all: TempFile::with_suffix(".midi")?.with_contents(&all[..])?,
+            tracks: Default::default(),
+        };
+
+        for (i, track) in midi_file.tracks.iter().enumerate() {
+            if track.events.is_empty() {
+                continue;
+            }
+            let t = midi_file.track_to_midi(i);
+            f.tracks[i] = Some(TempFile::with_suffix(".midi")?.with_contents(&t[..])?);
+        }
+        Ok(f)
     }
 }
 

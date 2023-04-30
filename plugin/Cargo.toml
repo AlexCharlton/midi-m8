@@ -17,3 +17,4 @@ log = { version = "0.4", features = ["max_level_warn", "release_max_level_error"
 m8-files = { workspace = true }
 midi-msg = { workspace = true }
 midi-m8-core = { workspace = true }
+temp-file = "0.1.7"

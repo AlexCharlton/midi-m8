@@ -99,12 +99,16 @@ impl TrackCtx {
     }
 }
 
-pub fn song_to_midi(song: &Song, cfg: &Config) -> Vec<u8> {
-    let f = MidiFile {
+pub fn song_to_midi_file(song: &Song, cfg: &Config) -> MidiFile {
+    MidiFile {
         format: MidiFileFormat::SimultaniousTracks,
         ticks_per_quarter_note: TICKS_PER_QUARTER_NOTE as u16,
         tracks: song_to_tracks(song, cfg),
-    };
+    }
+}
+
+pub fn song_to_midi(song: &Song, cfg: &Config) -> Vec<u8> {
+    let f = song_to_midi_file(song, cfg);
     // dbg!(&f);
     f.to_midi()
 }

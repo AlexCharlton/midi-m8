@@ -1815,6 +1815,7 @@ dependencies = [
  "m8-files",
  "midi-m8-core",
  "midi-msg",
+ "temp-file",
 ]
 
 [[package]]
@@ -2815,6 +2816,12 @@ dependencies = [
  "quote",
  "unicode-ident",
 ]
+
+[[package]]
+name = "temp-file"
+version = "0.1.7"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "f4479870ee948e4c5c3fc4774b46aa73eedf97d84503a9b90922c1bb19a73a8d"
 
 [[package]]
 name = "term"

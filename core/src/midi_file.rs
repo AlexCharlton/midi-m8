@@ -67,11 +67,26 @@ pub struct MidiFile {
     pub format: MidiFileFormat,
     pub tracks: Vec<MidiFileTrack>,
 }
+
 impl MidiFile {
     pub fn to_midi(&self) -> Vec<u8> {
         let mut r: Vec<u8> = vec![];
         self.extend_midi(&mut r);
         r
+    }
+
+    pub fn track_to_midi(&self, track_num: usize) -> Vec<u8> {
+        let mut v: Vec<u8> = vec![];
+        push_u32(6, &mut v); // Length of header, always 6 bytes
+        push_u16(self.format as u16, &mut v);
+        push_u16(1 as u16, &mut v); // num tracks
+        if self.ticks_per_quarter_note > 0x7FFF {
+            panic!("Ticks per quarter note must be less than {}", 0x7FFF);
+        }
+        push_u16(self.ticks_per_quarter_note, &mut v);
+        self.tracks[track_num].extend_midi(&mut v);
+
+        v
     }
 
     pub fn extend_midi(&self, v: &mut Vec<u8>) {
