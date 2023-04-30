@@ -23,7 +23,8 @@ impl lemna::Component<Renderer> for Parameters {
 
         let labels = node!(
             widgets::Div::new(),
-            lay!(size: size_pct!(Auto, 100.0), direction: Direction::Column)
+            lay!(size: size_pct!(Auto, 100.0), direction: Direction::Column),
+            0
         )
         .push(node!(widgets::Text::new(
             txt!("START"),
@@ -39,11 +40,20 @@ impl lemna::Component<Renderer> for Parameters {
         )));
         let params = node!(
             widgets::Div::new(),
-            lay!(size: size_pct!(Auto, 100.0), direction: Direction::Column)
+            lay!(size: size_pct!(Auto, 100.0), direction: Direction::Column),
+            1
         )
-        .push(node!(BasicParam::new(self.params.start.clone())))
-        .push(node!(BasicParam::new(self.params.max_len.clone())))
-        .push(node!(BasicParam::new(self.params.transpose.clone())));
+        .push(node!(BasicParam::new(self.params.start.clone()), lay!(), 0))
+        .push(node!(
+            BasicParam::new(self.params.max_len.clone()),
+            lay!(),
+            1
+        ))
+        .push(node!(
+            BasicParam::new(self.params.transpose.clone()),
+            lay!(),
+            2
+        ));
 
         Some(
             node!(

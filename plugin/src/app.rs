@@ -9,6 +9,7 @@ use lemna_nih_plug::nih_plug;
 use lemna_nih_plug::nih_plug::{
     context::gui::GuiContext,
     params::{range::*, *},
+    prelude::ParamPtr,
 };
 use m8_files::Song;
 use midi_m8_core::midi_file::MidiFile;
@@ -69,55 +70,6 @@ impl Default for M8Params {
     }
 }
 
-fn note_len_to_string(v: f32) -> String {
-    let whole_notes = v.floor();
-    let fractional = v - whole_notes;
-    let fract = if fractional < 0.0001 {
-        ""
-    } else if fractional <= 1.0 / 16.0 {
-        "1/16"
-    } else if fractional <= 2.0 / 16.0 {
-        "1/8"
-    } else if fractional <= 3.0 / 16.0 {
-        "1/8."
-    } else if fractional <= 4.0 / 16.0 {
-        "1/4"
-    } else if fractional <= 5.0 / 16.0 {
-        "5/16"
-    } else if fractional <= 6.0 / 16.0 {
-        "1/4."
-    } else if fractional <= 7.0 / 16.0 {
-        "7/16"
-    } else if fractional <= 8.0 / 16.0 {
-        "1/2"
-    } else if fractional <= 9.0 / 16.0 {
-        "9/16"
-    } else if fractional <= 10.0 / 16.0 {
-        "5/8"
-    } else if fractional <= 11.0 / 16.0 {
-        "11/16"
-    } else if fractional <= 12.0 / 16.0 {
-        "3/4"
-    } else if fractional <= 13.0 / 16.0 {
-        "13/16"
-    } else if fractional <= 14.0 / 16.0 {
-        "7/8"
-    } else if fractional <= 15.0 / 16.0 {
-        "15/16"
-    } else {
-        ""
-    };
-
-    let whole_notes = whole_notes as u32;
-    if whole_notes > 0 && fract != "" {
-        format!("{whole_notes} {fract}")
-    } else if whole_notes > 0 {
-        format!("{whole_notes}")
-    } else {
-        format!("{fract}")
-    }
-}
-
 #[derive(Debug)]
 pub struct MidiTempFiles {
     pub all: TempFile,
@@ -127,6 +79,10 @@ pub struct MidiTempFiles {
 #[derive(Debug)]
 pub enum AppMsg {
     FileSelected { selection: Option<PathBuf> },
+    BeginSettingParam { param: ParamPtr },
+    SetParam { param: ParamPtr, norm_value: f32 },
+    EndSettingParam { param: ParamPtr },
+    ParamsUpdated, // TODO useme
     OpenSite,
 }
 
@@ -273,6 +229,32 @@ impl lemna::Component<Renderer> for M8PlugApp {
             Some(AppMsg::OpenSite) => match open::that("https://github.com/AlexCharlton/midi-m8") {
                 _ => (),
             },
+            Some(AppMsg::BeginSettingParam { param }) => unsafe {
+                self.state_ref()
+                    .gui_context
+                    .as_ref()
+                    .map(|ctx| ctx.raw_begin_set_parameter(*param));
+            },
+            Some(AppMsg::EndSettingParam { param }) => unsafe {
+                self.state_ref()
+                    .gui_context
+                    .as_ref()
+                    .map(|ctx| ctx.raw_end_set_parameter(*param));
+                match self.update_song() {
+                    Err(e) => self.state_mut().error = Some(e.to_string()),
+                    Ok(_) => (),
+                }
+            },
+            Some(AppMsg::SetParam { param, norm_value }) => unsafe {
+                self.state_ref()
+                    .gui_context
+                    .as_ref()
+                    .map(|ctx| ctx.raw_set_parameter_normalized(*param, *norm_value));
+            },
+            Some(AppMsg::ParamsUpdated) => match self.update_song() {
+                Err(e) => self.state_mut().error = Some(e.to_string()),
+                Ok(_) => (),
+            },
             None => (),
         }
         vec![]
@@ -328,5 +310,54 @@ impl M8PlugApp {
 impl lemna::App<Renderer> for M8PlugApp {
     fn new() -> Self {
         Self { state: None }
+    }
+}
+
+fn note_len_to_string(v: f32) -> String {
+    let whole_notes = v.floor();
+    let fractional = v - whole_notes;
+    let fract = if fractional < 0.0001 {
+        ""
+    } else if fractional <= 1.0 / 16.0 {
+        "1/16"
+    } else if fractional <= 2.0 / 16.0 {
+        "1/8"
+    } else if fractional <= 3.0 / 16.0 {
+        "1/8."
+    } else if fractional <= 4.0 / 16.0 {
+        "1/4"
+    } else if fractional <= 5.0 / 16.0 {
+        "5/16"
+    } else if fractional <= 6.0 / 16.0 {
+        "1/4."
+    } else if fractional <= 7.0 / 16.0 {
+        "7/16"
+    } else if fractional <= 8.0 / 16.0 {
+        "1/2"
+    } else if fractional <= 9.0 / 16.0 {
+        "9/16"
+    } else if fractional <= 10.0 / 16.0 {
+        "5/8"
+    } else if fractional <= 11.0 / 16.0 {
+        "11/16"
+    } else if fractional <= 12.0 / 16.0 {
+        "3/4"
+    } else if fractional <= 13.0 / 16.0 {
+        "13/16"
+    } else if fractional <= 14.0 / 16.0 {
+        "7/8"
+    } else if fractional <= 15.0 / 16.0 {
+        "15/16"
+    } else {
+        ""
+    };
+
+    let whole_notes = whole_notes as u32;
+    if whole_notes > 0 && fract != "" {
+        format!("{whole_notes} {fract}")
+    } else if whole_notes > 0 {
+        format!("{whole_notes}")
+    } else {
+        format!("{fract}")
     }
 }
