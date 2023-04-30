@@ -62,6 +62,7 @@ pub struct MidiTempFiles {
 #[derive(Debug)]
 pub enum AppMsg {
     FileSelected { selection: Option<PathBuf> },
+    OpenSite,
 }
 
 #[derive(Default)]
@@ -148,13 +149,18 @@ impl lemna::Component<Renderer> for M8PlugApp {
                     },
                 ).tool_tip("Select or drag a M8 song file. Then drag the MIDI data from the desired track or all tracks.\n\nYou can adjust the max note length, the starting song position, and the amount by which to transpose M8 note numbers to turn them into MIDI note numbers (default is 36).".into())))
                 .push(node!(
-                    widgets::Text::new(
+                    widgets::Button::new(
                         txt!(format!("MIDI-M8 V{}", env!("CARGO_PKG_VERSION"))),
-                        TextStyle {
-                            color: BLUE,
+                        ButtonStyle {
+                            text_color: BLUE,
+                            background_color: DARK_GRAY,
+                            highlight_color: DARK_GRAY,
+                            active_color: DARK_GRAY,
+                            border_width: 0.0,
+                            padding: 1.5,
                             ..Default::default()
-                        }
-                    ),
+                        },
+                    ).on_click(Box::new(|| msg!(AppMsg::OpenSite))),
                     lay!(
                         position_type: PositionType::Absolute,
                         position: rect!(Auto, Auto, Auto, 0.0)
@@ -199,7 +205,10 @@ impl lemna::Component<Renderer> for M8PlugApp {
                     Ok(_) => (),
                 }
             }
-            _ => (),
+            Some(AppMsg::OpenSite) => match open::that("https://github.com/AlexCharlton/midi-m8") {
+                _ => (),
+            },
+            None => (),
         }
         vec![]
     }
