@@ -77,6 +77,7 @@ impl MidiFile {
 
     pub fn track_to_midi(&self, track_num: usize) -> Vec<u8> {
         let mut v: Vec<u8> = vec![];
+        v.extend_from_slice(b"MThd");
         push_u32(6, &mut v); // Length of header, always 6 bytes
         push_u16(self.format as u16, &mut v);
         push_u16(1 as u16, &mut v); // num tracks

@@ -13,7 +13,7 @@ use lemna_nih_plug::nih_plug::{
 use m8_files::Song;
 use midi_m8_core::midi_file::MidiFile;
 use midi_m8_core::song_to_midi::{song_to_midi_file, Config};
-use temp_file::{self, TempFile};
+use temp_file::TempFile;
 
 use crate::drag_sources::*;
 use crate::file_selection::*;
