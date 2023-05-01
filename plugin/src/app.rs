@@ -82,7 +82,7 @@ pub enum AppMsg {
     BeginSettingParam { param: ParamPtr },
     SetParam { param: ParamPtr, norm_value: f32 },
     EndSettingParam { param: ParamPtr },
-    ParamsUpdated, // TODO useme
+    ParamsUpdated,
     OpenSite,
 }
 

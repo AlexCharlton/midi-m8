@@ -1,3 +1,4 @@
+use lemna::msg;
 use lemna_nih_plug::nih_plug;
 use nih_plug::prelude::*;
 use std::sync::Arc;
@@ -47,7 +48,7 @@ impl Plugin for M8Plug {
 
     fn editor(&self, _async_executor: AsyncExecutor<Self>) -> Option<Box<dyn Editor>> {
         let app_params = self.params.clone();
-        lemna_nih_plug::create_lemna_editor::<Renderer, M8PlugApp, _>(
+        lemna_nih_plug::create_lemna_editor::<Renderer, M8PlugApp, _, _>(
             "Midi M8",
             400,
             300,
@@ -61,6 +62,7 @@ impl Plugin for M8Plug {
                     s.params = app_params.clone()
                 });
             },
+            || vec![msg!(AppMsg::ParamsUpdated)],
         )
     }
 }
