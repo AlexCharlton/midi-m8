@@ -80,7 +80,7 @@ impl MidiFile {
         v.extend_from_slice(b"MThd");
         push_u32(6, &mut v); // Length of header, always 6 bytes
         push_u16(self.format as u16, &mut v);
-        push_u16(1 as u16, &mut v); // num tracks
+        push_u16(1_u16, &mut v); // num tracks
         if self.ticks_per_quarter_note > 0x7FFF {
             panic!("Ticks per quarter note must be less than {}", 0x7FFF);
         }
