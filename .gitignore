@@ -4,3 +4,4 @@
 *.mid
 *.midi
 *.log
+.DS_Store

@@ -158,7 +158,7 @@ impl lemna::Component<Renderer> for M8PlugApp {
                         highlight_color: DARK_GRAY,
                         active_color: DARK_GRAY,
                         border_color: BLUE,
-                        radius: 16.0,
+                        radius: 20.0,
                         padding: 1.5,
                         tool_tip_style: ToolTipStyle {
                             text_color: LIGHT_GRAY,
