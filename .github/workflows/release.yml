@@ -40,6 +40,8 @@ jobs:
         uses: Swatinem/rust-cache@v2
       - name: Setup | Just
         uses: extractions/setup-just@v1
+      - name: Setup | cargo-bundle
+        run: cargo install cargo-bundle
 
       - name: Build
         run: just build

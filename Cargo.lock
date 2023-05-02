@@ -1807,7 +1807,7 @@ checksum = "6f2dd5c7f8aaf48a76e389068ab25ed80bdbc226b887f9013844c415698c9952"
 
 [[package]]
 name = "midi-m8"
-version = "1.2.0"
+version = "1.3.0"
 dependencies = [
  "clap",
  "human-panic",
@@ -1826,7 +1826,7 @@ dependencies = [
 
 [[package]]
 name = "midi-m8-plugin"
-version = "1.1.0"
+version = "1.3.0"
 dependencies = [
  "lemna",
  "lemna-nih-plug",
