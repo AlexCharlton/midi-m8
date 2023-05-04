@@ -20,10 +20,13 @@ build_plugin:
     just _build_plugin
 
 [macos]
-[windows]
 _build_plugin:
     cargo xtask bundle -p midi-m8-plugin --release
     cd plugin && cargo bundle --release
+
+[windows]
+_build_plugin:
+    cargo xtask bundle -p midi-m8-plugin --release
 
 [linux]
 _build_plugin:
@@ -82,6 +85,6 @@ _package version:
     @echo "Created ./packages/midi-m8-{{version}}-{{target-os}}_{{target-arch}}-VST3.zip"
 
     rm -r packages/prep/*
-    cp -r target/release/bundle/msi/*.msi packages/prep
+    cp target/release/midi-m8-plugin.exe packages/prep/midi-m8.exe
     cd packages/prep && 7z a -mx9 "../midi-m8-{{version}}-{{target-os}}_{{target-arch}}-STANDALONE.zip" *
     @echo "Created ./packages/midi-m8-{{version}}-{{target-os}}_{{target-arch}}-STANDALONE.zip"

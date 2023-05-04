@@ -21,6 +21,9 @@ midi-m8-core = { workspace = true }
 open = "4.1"
 temp-file = "0.1.7"
 
+[target.'cfg(windows)'.build-dependencies]
+winres = "0.1"
+
 [package.metadata.bundle]
 identifier = "com.github.AlexCharlton.midi-m8"
 icon = [

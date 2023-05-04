@@ -1,3 +1,4 @@
+#![windows_subsystem = "windows"]
 use lemna_nih_plug::nih_plug::prelude::*;
 
 use midi_m8_plugin::M8Plug;
