@@ -7,6 +7,8 @@ use lemna_nih_plug::nih_plug::params::*;
 #[derive(Debug, Default)]
 struct ParamState {
     last_drag_position: Option<f32>,
+    // Tracked separately from the quantized param value
+    raw_norm_value: f32,
 }
 
 #[derive(Debug)]
@@ -16,18 +18,21 @@ pub struct BasicParam<P: Param> {
 }
 
 impl<P: Param> BasicParam<P> {
-    const PIXELS_OVER_RANGE: f32 = 50.0;
+    const PIXELS_OVER_RANGE: f32 = 100.0;
 
     pub fn new(param: Arc<P>) -> Self {
         Self {
+            state: Some(ParamState {
+                last_drag_position: None,
+                raw_norm_value: param.modulated_normalized_value(),
+            }),
             param,
-            state: Some(Default::default()),
         }
     }
 
     fn shift_value(&self, delta: f32) -> f32 {
         let scale = 1.0 / Self::PIXELS_OVER_RANGE;
-        let value = self.param.modulated_normalized_value();
+        let value = self.state_ref().raw_norm_value;
         lemna::clamp(value + delta * scale, 0.0, 1.0)
     }
 }
@@ -89,7 +94,9 @@ impl<P: Param> lemna::Component<Renderer> for BasicParam<P> {
         let delta =
             self.state_ref().last_drag_position.unwrap() - event.relative_physical_position().y;
         self.state_mut().last_drag_position = Some(event.relative_physical_position().y);
-        let new_value = self.shift_value(delta);
+        let new_value =
+            self.shift_value(delta * if event.modifiers_held.shift { 0.1 } else { 1.0 });
+        self.state_mut().raw_norm_value = new_value;
         if new_value == self.param.modulated_normalized_value() {
             vec![]
         } else {
