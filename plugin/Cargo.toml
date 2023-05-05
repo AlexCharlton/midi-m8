@@ -27,6 +27,5 @@ winres = "0.1"
 [package.metadata.bundle]
 identifier = "com.github.AlexCharlton.midi-m8"
 icon = [
-  "256.ico",
   "include/icon_512x512@2x.png"
 ]

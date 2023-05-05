@@ -115,7 +115,7 @@ impl Component<Renderer> for TracksDragSource {
                 )
                 .push(node!(
                     widgets::Text::new(
-                        txt!(format!("{}", i)),
+                        txt!(format!("{}", i + 1)),
                         widgets::TextStyle {
                             h_alignment: HorizontalAlign::Left,
                             color: if has_data { LIGHT_GRAY } else { MID_GRAY },

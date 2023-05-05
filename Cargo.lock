@@ -233,7 +233,7 @@ dependencies = [
 [[package]]
 name = "baseview"
 version = "0.1.0"
-source = "git+https://github.com/AlexCharlton/baseview.git#b1c71efe464a7d3e53a50d084871e20e2aeb1637"
+source = "git+https://github.com/AlexCharlton/baseview.git#01923a714eea9b3fcbe32c4f89fcc77fad453d39"
 dependencies = [
  "cocoa",
  "core-foundation",
@@ -1541,7 +1541,7 @@ checksum = "830d08ce1d1d941e6b30645f1a0eb5643013d835ce3779a5fc208261dbe10f55"
 [[package]]
 name = "lemna"
 version = "0.2.1"
-source = "git+https://github.com/AlexCharlton/lemna.git#3dbfd807145613023f704e8f10b3d288bf2179b7"
+source = "git+https://github.com/AlexCharlton/lemna.git#414e29b79c148d30ec5f980bf7c96c1dc8959188"
 dependencies = [
  "ab_glyph",
  "ahash 0.3.8",
@@ -1569,7 +1569,7 @@ dependencies = [
 [[package]]
 name = "lemna-baseview"
 version = "0.2.0"
-source = "git+https://github.com/AlexCharlton/lemna.git#3dbfd807145613023f704e8f10b3d288bf2179b7"
+source = "git+https://github.com/AlexCharlton/lemna.git#414e29b79c148d30ec5f980bf7c96c1dc8959188"
 dependencies = [
  "arboard",
  "baseview",
@@ -1582,7 +1582,7 @@ dependencies = [
 [[package]]
 name = "lemna-macros"
 version = "0.2.0"
-source = "git+https://github.com/AlexCharlton/lemna.git#3dbfd807145613023f704e8f10b3d288bf2179b7"
+source = "git+https://github.com/AlexCharlton/lemna.git#414e29b79c148d30ec5f980bf7c96c1dc8959188"
 dependencies = [
  "quote",
  "syn",
@@ -1591,7 +1591,7 @@ dependencies = [
 [[package]]
 name = "lemna-nih-plug"
 version = "0.2.0"
-source = "git+https://github.com/AlexCharlton/lemna.git#3dbfd807145613023f704e8f10b3d288bf2179b7"
+source = "git+https://github.com/AlexCharlton/lemna.git#414e29b79c148d30ec5f980bf7c96c1dc8959188"
 dependencies = [
  "crossbeam-channel 0.4.4",
  "lemna",
@@ -1957,7 +1957,7 @@ dependencies = [
 [[package]]
 name = "nih_plug"
 version = "0.0.0"
-source = "git+https://github.com/AlexCharlton/nih-plug.git#b9586c91182269f473a38f3044fa6c32109e7e22"
+source = "git+https://github.com/AlexCharlton/nih-plug.git#3f7fde82ca391201920673790d0e9da954c57071"
 dependencies = [
  "anyhow",
  "anymap",
@@ -1994,7 +1994,7 @@ dependencies = [
 [[package]]
 name = "nih_plug_derive"
 version = "0.1.0"
-source = "git+https://github.com/AlexCharlton/nih-plug.git#b9586c91182269f473a38f3044fa6c32109e7e22"
+source = "git+https://github.com/AlexCharlton/nih-plug.git#3f7fde82ca391201920673790d0e9da954c57071"
 dependencies = [
  "proc-macro2",
  "quote",
