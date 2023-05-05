@@ -168,7 +168,7 @@ impl lemna::Component<Renderer> for M8PlugApp {
                         },
                         ..Default::default()
                     },
-                ).tool_tip("Select or drag a M8 song file. Then drag the MIDI data from the desired track or all tracks.\n\nYou can adjust the max note length, the starting song position, and the amount by which to transpose M8 note numbers to turn them into MIDI note numbers (default is 36).".into())))
+                ).tool_tip("Select or drag a M8 song file. Then drag the MIDI data from the desired track or all tracks.\n\nYou can adjust the max note length, the starting song position, and the amount by which to transpose M8 note numbers to turn them into MIDI note numbers (default is 36). Hold shift to fine-tune.".into())))
                 .push(node!(
                     widgets::Button::new(
                         txt!(format!("MIDI-M8 V{}", env!("CARGO_PKG_VERSION"))),
