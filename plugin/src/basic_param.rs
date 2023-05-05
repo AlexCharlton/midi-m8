@@ -106,4 +106,11 @@ impl<P: Param> lemna::Component<Renderer> for BasicParam<P> {
             })]
         }
     }
+
+    fn on_double_click(&mut self, _event: &mut Event<event::DoubleClick>) -> Vec<Message> {
+        vec![msg!(AppMsg::SetParam {
+            param: self.param.as_ptr(),
+            norm_value: self.param.default_normalized_value(),
+        })]
+    }
 }
