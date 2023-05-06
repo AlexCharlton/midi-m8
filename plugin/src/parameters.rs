@@ -36,7 +36,7 @@ impl lemna::Component<Renderer> for Parameters {
         )))
         .push(node!(widgets::Text::new(
             txt!("TRANSPOSE"),
-            label_style.clone()
+            label_style
         )));
         let params = node!(
             widgets::Div::new(),

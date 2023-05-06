@@ -57,14 +57,14 @@ impl<P: Param> lemna::Component<Renderer> for BasicParam<P> {
     }
 
     fn on_mouse_enter(&mut self, _event: &mut event::Event<event::MouseEnter>) -> Vec<Message> {
-        lemna::current_window().map(|w| w.set_cursor("SizeNS"));
+        if let Some(w) = lemna::current_window() { w.set_cursor("SizeNS") }
 
         vec![]
     }
 
     fn on_mouse_leave(&mut self, _event: &mut event::Event<event::MouseLeave>) -> Vec<Message> {
         if self.state_ref().last_drag_position.is_none() {
-            lemna::current_window().map(|w| w.unset_cursor());
+            if let Some(w) = lemna::current_window() { w.unset_cursor() }
         }
         vec![]
     }
@@ -83,7 +83,7 @@ impl<P: Param> lemna::Component<Renderer> for BasicParam<P> {
             .current_physical_aabb()
             .is_under(event.physical_mouse_position())
         {
-            lemna::current_window().map(|w| w.unset_cursor());
+            if let Some(w) = lemna::current_window() { w.unset_cursor() }
         }
         vec![msg!(AppMsg::EndSettingParam {
             param: self.param.as_ptr()

@@ -34,7 +34,7 @@ impl lemna::Component<Renderer> for FileSelection {
         .filter(vec!["*.m8s".into()], "M8 song file".into())
         .on_select(Box::new(|f| {
             msg!(AppMsg::FileSelected {
-                selection: f.clone()
+                selection: f
             })
         }));
 

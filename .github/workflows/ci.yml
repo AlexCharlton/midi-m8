@@ -23,8 +23,8 @@ jobs:
       - name: Setup | Cache
         uses: Swatinem/rust-cache@v2
 
-      # - name: Run | check
-      #   run: cargo check --workspace
+      - name: Run | check
+        run: cargo check --workspace
 
       - name: Run | test
         run: cargo test --workspace

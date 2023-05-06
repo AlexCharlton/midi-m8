@@ -195,9 +195,8 @@ impl lemna::Component<Renderer> for M8PlugApp {
         match &event.input.0 {
             Data::Filepath(p) if p.extension().map(|e| e == "m8s").unwrap_or(false) => {
                 self.state_mut().file = Some(p.clone());
-                match self.update_song() {
-                    Err(e) => self.state_mut().error = Some(e.to_string()),
-                    Ok(_) => (),
+                if let Err(e) = self.update_song() {
+                    self.state_mut().error = Some(e.to_string())
                 }
                 event.dirty();
             }
@@ -221,40 +220,36 @@ impl lemna::Component<Renderer> for M8PlugApp {
         match message.downcast_ref::<AppMsg>() {
             Some(AppMsg::FileSelected { selection: f }) => {
                 self.state_mut().file = f.clone();
-                match self.update_song() {
-                    Err(e) => self.state_mut().error = Some(e.to_string()),
-                    Ok(_) => (),
+                if let Err(e) = self.update_song() {
+                    self.state_mut().error = Some(e.to_string())
                 }
             }
-            Some(AppMsg::OpenSite) => match open::that("https://github.com/AlexCharlton/midi-m8") {
-                _ => (),
-            },
+            Some(AppMsg::OpenSite) => {
+                open::that("https://github.com/AlexCharlton/midi-m8").unwrap_or(())
+            }
             Some(AppMsg::BeginSettingParam { param }) => unsafe {
-                self.state_ref()
-                    .gui_context
-                    .as_ref()
-                    .map(|ctx| ctx.raw_begin_set_parameter(*param));
+                if let Some(ctx) = self.state_ref().gui_context.as_ref() {
+                    ctx.raw_begin_set_parameter(*param)
+                }
             },
             Some(AppMsg::EndSettingParam { param }) => unsafe {
-                self.state_ref()
-                    .gui_context
-                    .as_ref()
-                    .map(|ctx| ctx.raw_end_set_parameter(*param));
-                match self.update_song() {
-                    Err(e) => self.state_mut().error = Some(e.to_string()),
-                    Ok(_) => (),
+                if let Some(ctx) = self.state_ref().gui_context.as_ref() {
+                    ctx.raw_end_set_parameter(*param)
+                }
+                if let Err(e) = self.update_song() {
+                    self.state_mut().error = Some(e.to_string())
                 }
             },
             Some(AppMsg::SetParam { param, norm_value }) => unsafe {
-                self.state_ref()
-                    .gui_context
-                    .as_ref()
-                    .map(|ctx| ctx.raw_set_parameter_normalized(*param, *norm_value));
+                if let Some(ctx) = self.state_ref().gui_context.as_ref() {
+                    ctx.raw_set_parameter_normalized(*param, *norm_value)
+                }
             },
-            Some(AppMsg::ParamsUpdated) => match self.update_song() {
-                Err(e) => self.state_mut().error = Some(e.to_string()),
-                Ok(_) => (),
-            },
+            Some(AppMsg::ParamsUpdated) => {
+                if let Err(e) = self.update_song() {
+                    self.state_mut().error = Some(e.to_string())
+                }
+            }
             None => (),
         }
         vec![]
@@ -347,11 +342,11 @@ fn note_len_to_string(v: f32) -> String {
     };
 
     let whole_notes = whole_notes as u32;
-    if whole_notes > 0 && fract != "" {
+    if whole_notes > 0 && !fract.is_empty() {
         format!("{whole_notes} {fract}")
     } else if whole_notes > 0 {
         format!("{whole_notes}")
     } else {
-        format!("{fract}")
+        fract.to_string()
     }
 }
