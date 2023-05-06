@@ -104,7 +104,7 @@ impl fmt::Debug for AppState {
 }
 
 #[state_component(AppState)]
-#[derive(Debug)]
+#[derive(Debug, Default)]
 pub struct M8PlugApp {}
 
 #[state_component_impl(AppState)]
@@ -304,12 +304,6 @@ impl M8PlugApp {
             f.tracks[i] = Some(TempFile::with_suffix(".midi")?.with_contents(&t[..])?);
         }
         Ok(f)
-    }
-}
-
-impl lemna::App<Renderer> for M8PlugApp {
-    fn new() -> Self {
-        Self { state: None }
     }
 }
 
