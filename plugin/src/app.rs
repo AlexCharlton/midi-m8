@@ -2,7 +2,7 @@ use std::error::Error;
 use std::fmt;
 use std::fs::File;
 use std::path::PathBuf;
-use std::sync::Arc;
+use std::sync::{Arc, RwLock};
 
 use lemna::{self, widgets, *};
 use lemna_nih_plug::nih_plug;
@@ -14,6 +14,7 @@ use lemna_nih_plug::nih_plug::{
 use m8_files::Song;
 use midi_m8_core::midi_file::MidiFile;
 use midi_m8_core::song_to_midi::{song_to_midi_file, Config, TICKS_PER_QUARTER_NOTE};
+use serde::{Deserialize, Serialize};
 use temp_file::TempFile;
 
 use crate::drag_sources::*;
@@ -28,6 +29,9 @@ pub const MID_GRAY: Color = color!(0x5F, 0x5F, 0x5F);
 pub const LIGHT_GRAY: Color = color!(0xDE, 0xDE, 0xDE);
 pub const BLUE: Color = color!(0x00, 0xE5, 0xEE);
 
+#[derive(Debug, Default, Clone, PartialEq, Serialize, Deserialize)]
+pub struct MaybeFile(Option<PathBuf>);
+
 #[derive(Params, Debug)]
 pub struct M8Params {
     #[id = "start"]
@@ -36,6 +40,9 @@ pub struct M8Params {
     pub max_len: Arc<FloatParam>,
     #[id = "transpose"]
     pub transpose: Arc<IntParam>,
+
+    #[persist = "file"]
+    pub file: Arc<RwLock<MaybeFile>>,
 }
 
 impl Default for M8Params {
@@ -66,6 +73,7 @@ impl Default for M8Params {
                 36,
                 IntRange::Linear { min: 0, max: 72 },
             )),
+            file: Default::default(),
         }
     }
 }
@@ -90,7 +98,6 @@ pub enum AppMsg {
 pub struct AppState {
     pub params: Arc<M8Params>,
     pub gui_context: Option<Arc<dyn GuiContext>>,
-    file: Option<PathBuf>,
     song: Option<Arc<MidiTempFiles>>,
     error: Option<String>, // TODO
 }
@@ -98,7 +105,7 @@ pub struct AppState {
 impl fmt::Debug for AppState {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         f.debug_struct("AppState")
-            .field("file", &self.file)
+            .field("file", &self.params)
             .finish()
     }
 }
@@ -125,7 +132,7 @@ impl lemna::Component<Renderer> for M8PlugApp {
                 )
             )
             .push(node!(
-                FileSelection::new(self.state_ref().file.clone()),
+                FileSelection::new(self.state_ref().params.file.read().unwrap().0.clone()),
                 lay!(size: size!(Auto, 30.0)),
                 0
             ))
@@ -194,7 +201,7 @@ impl lemna::Component<Renderer> for M8PlugApp {
     fn on_drag_drop(&mut self, event: &mut Event<event::DragDrop>) -> Vec<Message> {
         match &event.input.0 {
             Data::Filepath(p) if p.extension().map(|e| e == "m8s").unwrap_or(false) => {
-                self.state_mut().file = Some(p.clone());
+                *self.state_mut().params.file.write().unwrap() = MaybeFile(Some(p.clone()));
                 if let Err(e) = self.update_song() {
                     self.state_mut().error = Some(e.to_string())
                 }
@@ -219,7 +226,7 @@ impl lemna::Component<Renderer> for M8PlugApp {
     fn update(&mut self, message: Message) -> Vec<Message> {
         match message.downcast_ref::<AppMsg>() {
             Some(AppMsg::FileSelected { selection: f }) => {
-                self.state_mut().file = f.clone();
+                *self.state_mut().params.file.write().unwrap() = MaybeFile(f.clone());
                 if let Err(e) = self.update_song() {
                     self.state_mut().error = Some(e.to_string())
                 }
@@ -258,7 +265,7 @@ impl lemna::Component<Renderer> for M8PlugApp {
 
 impl M8PlugApp {
     fn update_song(&mut self) -> Result<(), Box<dyn Error>> {
-        if let Some(p) = &self.state_ref().file {
+        let v = if let Some(p) = &self.state_ref().params.file.read().unwrap().0 {
             let mut f = File::open(p)?;
             let song = Song::read(&mut f)?;
             let mut config = Config {
@@ -277,10 +284,11 @@ impl M8PlugApp {
             }
 
             let midi_file = song_to_midi_file(&song, &config);
-            self.state_mut().song = Some(Arc::new(Self::midi_file_to_paths(midi_file)?));
+            Some(Arc::new(Self::midi_file_to_paths(midi_file)?))
         } else {
-            self.state_mut().song = None;
-        }
+            None
+        };
+        self.state_mut().song = v;
         Ok(())
     }
 
