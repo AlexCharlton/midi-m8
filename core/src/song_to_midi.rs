@@ -143,7 +143,7 @@ fn collect_track_events(track: usize, song: &Song, cfg: &Config) -> MidiFileTrac
     }
 
     MidiFileTrack {
-        name: Some(format!("Track {}", track + 1)),
+        name: Some(format!("{}_{}", song.name, track + 1)),
         events: ctx.events,
         n_ticks: ctx.ticks.max(TICKS_PER_QUARTER_NOTE * 4),
     }
