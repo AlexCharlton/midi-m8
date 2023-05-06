@@ -1,11 +1,13 @@
 # midi-m8
-A command line tool for turning Dirtywave M8 songs into Midi tracks.
+A tool for turning Dirtywave M8 songs into Midi tracks. Available for CLI or as a standalone GUI app, a VST3 or a CLAP plugin for Windows and OSX.
 
 [![Crates.io](https://img.shields.io/crates/v/midi-m8)](https://crates.io/crates/midi-m8)
 [![CI](https://github.com/AlexCharlton/midi-m8/actions/workflows/ci.yml/badge.svg)](https://github.com/AlexCharlton/midi-m8/actions/workflows/ci.yml)
 
+![Plugin in action](https://raw.githubusercontent.com/AlexCharlton/midi-m8/master/plugin/MIDI-M8.gif)
+
 ## Installation
-Precompiled 64 bit binaries for Linux, Windows and OS X can be found in the [Releases](https://github.com/AlexCharlton/midi-m8/releases/latest). Download them and run them from the command line.
+Precompiled 64 bit binaries for Linux, Windows and OS X can be found in the [Releases](https://github.com/AlexCharlton/midi-m8/releases/latest).
 
 ## Usage
 ```
