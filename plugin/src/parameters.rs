@@ -34,10 +34,7 @@ impl lemna::Component<Renderer> for Parameters {
             txt!("MAX LEN"),
             label_style.clone()
         )))
-        .push(node!(widgets::Text::new(
-            txt!("TRANSPOSE"),
-            label_style
-        )));
+        .push(node!(widgets::Text::new(txt!("TRANSPOSE"), label_style)));
         let params = node!(
             widgets::Div::new(),
             lay!(size: size_pct!(Auto, 100.0), direction: Direction::Column),

@@ -32,11 +32,7 @@ impl lemna::Component<Renderer> for FileSelection {
             },
         )
         .filter(vec!["*.m8s".into()], "M8 song file".into())
-        .on_select(Box::new(|f| {
-            msg!(AppMsg::FileSelected {
-                selection: f
-            })
-        }));
+        .on_select(Box::new(|f| msg!(AppMsg::FileSelected { selection: f })));
 
         if let Some(p) = &self.file {
             selector = selector.default_path(p.clone());
