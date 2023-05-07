@@ -6,6 +6,16 @@ edition = "2021"
 repository = "https://github.com/AlexCharlton/midi-m8"
 license = "MIT"
 keywords = ["music"]
+# Not listening to .gitignore for some reason
+exclude = [
+  "/packages",
+  "*.m8s",
+  "*.mid",
+  "*.midi",
+  "*.log",
+  "*.exe",
+  "justfile",
+]
 
 [dependencies]
 clap = { version = "4.1", features = ["derive"] }
