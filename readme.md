@@ -9,6 +9,8 @@ A tool for turning Dirtywave M8 songs into Midi tracks. Available for CLI or as 
 ## Installation
 Precompiled 64 bit binaries for Linux, Windows and OS X can be found in the [Releases](https://github.com/AlexCharlton/midi-m8/releases/latest).
 
+There are 4 versions of midi-m8: The CLI app, a standalone GUI, a VST3 plugin, and a CLAP plugin. Only the CLI version is available on Linux. All versions are compiled for x64 Windows, x64 OSX and ARM arm64 OSX.
+
 ## Usage
 ```
 Usage: midi-m8 [OPTIONS] <INPUT_FILE>
@@ -105,5 +107,9 @@ Alternately you could:
 You'll now have a binary in the `./target/release/` directory.
 
 ## Changelog
+### v1.3
+- GUI version added
+- MIDI track names now contain song name
+
 ### v1.2
 - V3 support
