@@ -48,7 +48,7 @@ impl Plugin for M8Plug {
 
     fn editor(&self, _async_executor: AsyncExecutor<Self>) -> Option<Box<dyn Editor>> {
         let app_params = self.params.clone();
-        lemna_nih_plug::create_lemna_editor::<Renderer, M8PlugApp, _, _>(
+        lemna_nih_plug::create_lemna_editor::<lemna::render::wgpu::WGPURenderer, M8PlugApp, _, _>(
             "Midi M8",
             400,
             300,

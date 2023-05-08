@@ -21,9 +21,6 @@ use crate::drag_sources::*;
 use crate::file_selection::*;
 use crate::parameters::*;
 
-pub type Renderer = lemna::render::wgpu::WGPURenderer;
-pub type Node = lemna::Node<Renderer>;
-
 pub const DARK_GRAY: Color = color!(0x16, 0x16, 0x16);
 pub const MID_GRAY: Color = color!(0x5F, 0x5F, 0x5F);
 pub const LIGHT_GRAY: Color = color!(0xDE, 0xDE, 0xDE);
@@ -115,7 +112,7 @@ impl fmt::Debug for AppState {
 pub struct M8PlugApp {}
 
 #[state_component_impl(AppState)]
-impl lemna::Component<Renderer> for M8PlugApp {
+impl lemna::Component for M8PlugApp {
     fn init(&mut self) {
         self.state = Some(AppState::default())
     }

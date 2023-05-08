@@ -1,6 +1,6 @@
 use std::sync::Arc;
 
-use crate::{app::*, Node, Renderer};
+use crate::app::*;
 use lemna::{self, widgets, *};
 
 #[derive(Debug)]
@@ -14,7 +14,7 @@ impl DragSources {
     }
 }
 
-impl lemna::Component<Renderer> for DragSources {
+impl lemna::Component for DragSources {
     fn view(&self) -> Option<Node> {
         Some(
             node!(
@@ -44,7 +44,7 @@ pub struct AllTracksDragSource {
     song: Option<Arc<MidiTempFiles>>,
 }
 
-impl Component<Renderer> for AllTracksDragSource {
+impl Component for AllTracksDragSource {
     fn view(&self) -> Option<Node> {
         let has_data = self.song.is_some();
         Some(
@@ -86,7 +86,7 @@ pub struct TracksDragSource {
     song: Option<Arc<MidiTempFiles>>,
 }
 
-impl Component<Renderer> for TracksDragSource {
+impl Component for TracksDragSource {
     fn view(&self) -> Option<Node> {
         let mut container = node!(
             widgets::Div::new(),
@@ -145,7 +145,7 @@ pub struct TrackDragSource {
     track: usize,
 }
 
-impl Component<Renderer> for TrackDragSource {
+impl Component for TrackDragSource {
     fn view(&self) -> Option<Node> {
         let has_data = self
             .song

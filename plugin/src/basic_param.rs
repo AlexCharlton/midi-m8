@@ -1,6 +1,6 @@
 use std::sync::Arc;
 
-use crate::{app::*, Node, Renderer};
+use crate::app::*;
 use lemna::{self, widgets, *};
 use lemna_nih_plug::nih_plug::params::*;
 
@@ -38,7 +38,7 @@ impl<P: Param> BasicParam<P> {
 }
 
 #[state_component_impl(ParamState)]
-impl<P: Param> lemna::Component<Renderer> for BasicParam<P> {
+impl<P: Param> lemna::Component for BasicParam<P> {
     fn view(&self) -> Option<Node> {
         Some(node!(widgets::Text::new(
             txt!(self

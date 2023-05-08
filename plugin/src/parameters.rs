@@ -1,6 +1,6 @@
 use std::sync::Arc;
 
-use crate::{app::*, basic_param::BasicParam, Node, Renderer};
+use crate::{app::*, basic_param::BasicParam};
 use lemna::{self, widgets, *};
 
 #[derive(Debug)]
@@ -14,7 +14,7 @@ impl Parameters {
     }
 }
 
-impl lemna::Component<Renderer> for Parameters {
+impl lemna::Component for Parameters {
     fn view(&self) -> Option<Node> {
         let label_style = TextStyle {
             color: MID_GRAY,

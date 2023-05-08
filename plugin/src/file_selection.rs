@@ -1,6 +1,6 @@
 use std::path::PathBuf;
 
-use crate::{app::*, Node, Renderer};
+use crate::app::*;
 use lemna::{self, widgets, *};
 
 #[derive(Debug)]
@@ -14,7 +14,7 @@ impl FileSelection {
     }
 }
 
-impl lemna::Component<Renderer> for FileSelection {
+impl lemna::Component for FileSelection {
     fn view(&self) -> Option<Node> {
         let mut selector = widgets::FileSelector::new(
             "Choose a file".to_string(),
