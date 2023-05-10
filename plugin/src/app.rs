@@ -121,38 +121,32 @@ impl lemna::Component for M8PlugApp {
         Some(
             node!(
                 widgets::Div::new().bg(DARK_GRAY),
-                lay!(
-                    size: size_pct!(100.0),
-                    direction: Direction::Column,
-                    axis_alignment: Alignment::Stretch,
-                    cross_alignment: Alignment::Stretch
-                )
+                [size_pct: [100.0],
+                 direction: Column,
+                 axis_alignment: Stretch,
+                 cross_alignment: Stretch
+                ]
             )
             .push(node!(
                 FileSelection::new(self.state_ref().params.file.read().unwrap().0.clone()),
-                lay!(size: size!(Auto, 30.0)),
-                0
+                [size: [Auto, 30]]
             ))
             .push(node!(
                 Parameters::new(self.state_ref().params.clone()),
-                lay!(size: size!(Auto, 90.0)),
-                1
+                [size: [Auto, 90]]
             ))
             .push(node!(
                 DragSources::new(self.state_ref().song.clone()),
-                lay!(size: size!(Auto, 150.0)),
-                2
+                [size: [Auto, 150]]
             ))
             // Footer
             .push(
                 node!(
                     widgets::Div::new(),
-                    lay!(
-                        size: size!(Auto, 30.0),
-                        direction: Direction::Row,
-                        padding: rect!(5.0),
-                    ),
-                    3
+                    [size: [Auto, 30],
+                     direction: Direction::Row,
+                     padding: [5],
+                    ],
                 )
                 .push(node!(widgets::Button::new(
                     txt!("?"),
@@ -186,16 +180,16 @@ impl lemna::Component for M8PlugApp {
                             ..Default::default()
                         },
                     ).on_click(Box::new(|| msg!(AppMsg::OpenSite))),
-                    lay!(
-                        position_type: PositionType::Absolute,
-                        position: rect!(Auto, Auto, Auto, 0.0)
-                    )
+                    [
+                        position_type: Absolute,
+                        position: [Auto, Auto, Auto, 0.0]
+                    ]
                 )),
             ),
         )
     }
 
-    fn on_drag_drop(&mut self, event: &mut Event<event::DragDrop>) -> Vec<Message> {
+    fn on_drag_drop(&mut self, event: &mut Event<event::DragDrop>) {
         match &event.input.0 {
             Data::Filepath(p) if p.extension().map(|e| e == "m8s").unwrap_or(false) => {
                 *self.state_mut().params.file.write().unwrap() = MaybeFile(Some(p.clone()));
@@ -206,10 +200,9 @@ impl lemna::Component for M8PlugApp {
             }
             _ => (),
         }
-        vec![]
     }
 
-    fn on_drag_enter(&mut self, event: &mut Event<event::DragEnter>) -> Vec<Message> {
+    fn on_drag_enter(&mut self, event: &mut Event<event::DragEnter>) {
         let contains_m8_song = event.input.0.iter().any(|f| match f {
             Data::Filepath(p) => p.extension().map(|e| e == "m8s").unwrap_or(false),
             _ => false,
@@ -217,7 +210,6 @@ impl lemna::Component for M8PlugApp {
         current_window()
             .unwrap()
             .set_drop_target_valid(contains_m8_song);
-        vec![]
     }
 
     fn update(&mut self, message: Message) -> Vec<Message> {

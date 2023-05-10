@@ -39,10 +39,10 @@ impl lemna::Component for FileSelection {
         }
 
         Some(
-            node!(widgets::Div::new(), lay!(size: size_pct!(100.0)))
+            node!(widgets::Div::new(), [size_pct: [100]])
                 .push(node!(
                     selector,
-                    lay!(margin: rect!(5.0), size: size!(22.0, 22.0))
+                    [margin: [5], size: [22, 22]]
                 ))
                 .push(node!(
                     widgets::Text::new(
@@ -56,7 +56,7 @@ impl lemna::Component for FileSelection {
                             ..Default::default()
                         }
                     ),
-                    lay!(margin: rect!(7.0, 7.0))
+                    [margin: [7, 7]]
                 )),
         )
     }

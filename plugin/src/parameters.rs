@@ -23,8 +23,7 @@ impl lemna::Component for Parameters {
 
         let labels = node!(
             widgets::Div::new(),
-            lay!(size: size_pct!(Auto, 100.0), direction: Direction::Column),
-            0
+            [size_pct: [Auto, 100], direction: Column]
         )
         .push(node!(widgets::Text::new(
             txt!("START"),
@@ -37,29 +36,18 @@ impl lemna::Component for Parameters {
         .push(node!(widgets::Text::new(txt!("TRANSPOSE"), label_style)));
         let params = node!(
             widgets::Div::new(),
-            lay!(size: size_pct!(Auto, 100.0), direction: Direction::Column),
-            1
+            [size_pct: [Auto, 100], direction: Column]
         )
-        .push(node!(BasicParam::new(self.params.start.clone()), lay!(), 0))
-        .push(node!(
-            BasicParam::new(self.params.max_len.clone()),
-            lay!(),
-            1
-        ))
-        .push(node!(
-            BasicParam::new(self.params.transpose.clone()),
-            lay!(),
-            2
-        ));
+        .push(node!(BasicParam::new(self.params.start.clone())))
+        .push(node!(BasicParam::new(self.params.max_len.clone())))
+        .push(node!(BasicParam::new(self.params.transpose.clone())));
 
         Some(
             node!(
                 widgets::Div::new(),
-                lay!(
-                    size: size_pct!(100.0),
-                    padding: rect!(25.0, 15.0),
-                    direction: Direction::Row
-                )
+                [size_pct: [100],
+                 padding: [25, 15],
+                 direction: Row]
             )
             .push(labels)
             .push(params),

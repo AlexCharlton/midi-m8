@@ -128,7 +128,7 @@ dependencies = [
  "objc-foundation",
  "objc_id",
  "once_cell",
- "parking_lot",
+ "parking_lot 0.12.1",
  "thiserror",
  "winapi",
  "x11rb",
@@ -709,7 +709,7 @@ dependencies = [
  "ndk-context",
  "oboe",
  "once_cell",
- "parking_lot",
+ "parking_lot 0.12.1",
  "wasm-bindgen",
  "wasm-bindgen-futures",
  "web-sys",
@@ -1162,6 +1162,16 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "d2fabcfbdc87f4758337ca535fb41a6d701b65693ce38287d856d1674551ec9b"
 
 [[package]]
+name = "global_counter"
+version = "0.2.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "2a77c0a6d353621e0ba32c0eb64a5ed3832d900135712779e38bd2ea31d6509f"
+dependencies = [
+ "once_cell",
+ "parking_lot 0.11.2",
+]
+
+[[package]]
 name = "glow"
 version = "0.12.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1373,6 +1383,15 @@ dependencies = [
 ]
 
 [[package]]
+name = "instant"
+version = "0.1.12"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "7a5bbe824c507c5da5956355e86a746d82e0e1464f65d862cc5e71da70e94b2c"
+dependencies = [
+ "cfg-if 1.0.0",
+]
+
+[[package]]
 name = "io-lifetimes"
 version = "1.0.5"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1541,7 +1560,7 @@ checksum = "830d08ce1d1d941e6b30645f1a0eb5643013d835ce3779a5fc208261dbe10f55"
 [[package]]
 name = "lemna"
 version = "0.2.1"
-source = "git+https://github.com/AlexCharlton/lemna.git#594205e793eee2c9b7c90ab70eb57fd7f42fc5a9"
+source = "git+https://github.com/AlexCharlton/lemna.git#1e930db6d5211edc81729675bb9ca49fe72feed0"
 dependencies = [
  "ab_glyph",
  "ahash 0.3.8",
@@ -1569,7 +1588,7 @@ dependencies = [
 [[package]]
 name = "lemna-baseview"
 version = "0.2.0"
-source = "git+https://github.com/AlexCharlton/lemna.git#594205e793eee2c9b7c90ab70eb57fd7f42fc5a9"
+source = "git+https://github.com/AlexCharlton/lemna.git#1e930db6d5211edc81729675bb9ca49fe72feed0"
 dependencies = [
  "arboard",
  "baseview",
@@ -1582,8 +1601,9 @@ dependencies = [
 [[package]]
 name = "lemna-macros"
 version = "0.2.0"
-source = "git+https://github.com/AlexCharlton/lemna.git#594205e793eee2c9b7c90ab70eb57fd7f42fc5a9"
+source = "git+https://github.com/AlexCharlton/lemna.git#1e930db6d5211edc81729675bb9ca49fe72feed0"
 dependencies = [
+ "global_counter",
  "quote",
  "syn",
 ]
@@ -1591,7 +1611,7 @@ dependencies = [
 [[package]]
 name = "lemna-nih-plug"
 version = "0.2.0"
-source = "git+https://github.com/AlexCharlton/lemna.git#594205e793eee2c9b7c90ab70eb57fd7f42fc5a9"
+source = "git+https://github.com/AlexCharlton/lemna.git#1e930db6d5211edc81729675bb9ca49fe72feed0"
 dependencies = [
  "crossbeam-channel 0.4.4",
  "lemna",
@@ -1982,7 +2002,7 @@ dependencies = [
  "nih_log",
  "nih_plug_derive",
  "objc",
- "parking_lot",
+ "parking_lot 0.12.1",
  "raw-window-handle",
  "rtrb",
  "serde",
@@ -2245,12 +2265,37 @@ dependencies = [
 
 [[package]]
 name = "parking_lot"
+version = "0.11.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "7d17b78036a60663b797adeaee46f5c9dfebb86948d1255007a1d6be0271ff99"
+dependencies = [
+ "instant",
+ "lock_api",
+ "parking_lot_core 0.8.6",
+]
+
+[[package]]
+name = "parking_lot"
 version = "0.12.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "3742b2c103b9f06bc9fff0a37ff4912935851bee6d36f3c02bcc755bcfec228f"
 dependencies = [
  "lock_api",
- "parking_lot_core",
+ "parking_lot_core 0.9.7",
+]
+
+[[package]]
+name = "parking_lot_core"
+version = "0.8.6"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "60a2cfe6f0ad2bfc16aefa463b497d5c7a5ecd44a23efa72aa342d90177356dc"
+dependencies = [
+ "cfg-if 1.0.0",
+ "instant",
+ "libc",
+ "redox_syscall",
+ "smallvec",
+ "winapi",
 ]
 
 [[package]]
@@ -3229,7 +3274,7 @@ dependencies = [
  "js-sys",
  "log",
  "naga",
- "parking_lot",
+ "parking_lot 0.12.1",
  "profiling",
  "raw-window-handle",
  "smallvec",
@@ -3255,7 +3300,7 @@ dependencies = [
  "fxhash",
  "log",
  "naga",
- "parking_lot",
+ "parking_lot 0.12.1",
  "profiling",
  "raw-window-handle",
  "smallvec",
@@ -3294,7 +3339,7 @@ dependencies = [
  "metal",
  "naga",
  "objc",
- "parking_lot",
+ "parking_lot 0.12.1",
  "profiling",
  "range-alloc",
  "raw-window-handle",

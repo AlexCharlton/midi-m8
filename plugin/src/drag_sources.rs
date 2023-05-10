@@ -19,18 +19,18 @@ impl lemna::Component for DragSources {
         Some(
             node!(
                 widgets::Div::new(),
-                lay!(
-                    size: size_pct!(100.0),
-                    direction: Direction::Column,
-                    axis_alignment: Alignment::Stretch,
-                    cross_alignment: Alignment::Stretch
-                )
+                [
+                    size_pct: [100],
+                    direction: Column,
+                    axis_alignment: Stretch,
+                    cross_alignment: Stretch
+                ]
             )
             .push(node!(
                 TracksDragSource {
                     song: self.song.clone()
                 },
-                lay!(size: size!(Auto, 70.0))
+                [size: [Auto, 70.0]]
             ))
             .push(node!(AllTracksDragSource {
                 song: self.song.clone()
@@ -50,14 +50,13 @@ impl Component for AllTracksDragSource {
         Some(
             node!(
                 widgets::Div::new().bg(if has_data { BLUE } else { MID_GRAY }),
-                lay!(
-                    size: size_pct!(100.0),
-                    margin: rect!(10.0),
-                    padding: rect!(5.0),
-                    cross_alignment: layout::Alignment::Center,
-                    axis_alignment: layout::Alignment::Center
-                ),
-                0
+                [
+                    size_pct: [100],
+                    margin: [10],
+                    padding: [5],
+                    cross_alignment: Center,
+                    axis_alignment: Center
+                ],
             )
             .push(node!(widgets::Text::new(
                 txt!(if has_data { "ALL TRACKS" } else { "NO DATA" }),
@@ -70,14 +69,13 @@ impl Component for AllTracksDragSource {
         )
     }
 
-    fn on_drag_start(&mut self, event: &mut Event<event::DragStart>) -> Vec<Message> {
+    fn on_drag_start(&mut self, event: &mut Event<event::DragStart>) {
         if let Some(f) = &self.song {
             current_window()
                 .unwrap()
                 .start_drag(Data::Filepath(f.all.path().into()));
             event.stop_bubbling();
         }
-        vec![]
     }
 }
 
@@ -90,12 +88,12 @@ impl Component for TracksDragSource {
     fn view(&self) -> Option<Node> {
         let mut container = node!(
             widgets::Div::new(),
-            lay!(
-                size: size_pct!(100.0),
-                margin: rect!(0.0, 5.0),
-                direction: Direction::Row,
-                axis_alignment: Alignment::Stretch,
-            )
+            [
+                size_pct: [100],
+                margin: [0.0, 5.0],
+                direction: Row,
+                axis_alignment: Stretch,
+            ]
         );
         for i in 0..8 {
             let has_data = self
@@ -106,12 +104,12 @@ impl Component for TracksDragSource {
             container = container.push(
                 node!(
                     widgets::Div::new(),
-                    lay!(
-                        size: size_pct!(Auto, 100.0),
-                        direction: Direction::Column,
-                        axis_alignment: Alignment::Stretch,
-                        margin: rect!(5.0),
-                    )
+                    [
+                        size_pct: [Auto, 100],
+                        direction: Column,
+                        axis_alignment: Stretch,
+                        margin: [5],
+                    ]
                 )
                 .push(node!(
                     widgets::Text::new(
@@ -122,15 +120,18 @@ impl Component for TracksDragSource {
                             ..widgets::TextStyle::default()
                         }
                     ),
-                    lay!(margin: rect!(3.0))
+                    [margin: [3]]
                 ))
-                .push(node!(
-                    TrackDragSource {
-                        song: self.song.clone(),
-                        track: i,
-                    },
-                    lay!(size: size_pct!(100.0, Auto))
-                )),
+                .push(
+                    node!(
+                        TrackDragSource {
+                            song: self.song.clone(),
+                            track: i,
+                        },
+                        [size_pct: [100, Auto]]
+                    )
+                    .key(i as u64),
+                ),
             );
         }
         Some(container)
@@ -155,11 +156,11 @@ impl Component for TrackDragSource {
 
         Some(node!(
             widgets::Div::new().bg(if has_data { LIGHT_GRAY } else { MID_GRAY }),
-            lay!(size: size_pct!(100.0))
+            [size_pct: [100]]
         ))
     }
 
-    fn on_drag_start(&mut self, event: &mut Event<event::DragStart>) -> Vec<Message> {
+    fn on_drag_start(&mut self, event: &mut Event<event::DragStart>) {
         if let Some(f) = self
             .song
             .as_ref()
@@ -170,6 +171,5 @@ impl Component for TrackDragSource {
                 .start_drag(Data::Filepath(f.path().into()));
             event.stop_bubbling();
         }
-        vec![]
     }
 }
