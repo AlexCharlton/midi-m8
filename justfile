@@ -49,22 +49,30 @@ _package version:
 [macos]
 _package version:
     cp target/release/{{output-filename}} packages/prep
-    cd packages/prep && zip -r -9  "../midi-m8-{{version}}-{{target-os}}_{{target-arch}}-CLI.zip" *
+    cd packages/prep && codesign -s "$DEVELOPER_ID" --deep -v -f -o runtime *
+    cd packages/prep && ditto -c -k . "../midi-m8-{{version}}-{{target-os}}_{{target-arch}}-CLI.zip"
+    cd packages && xcrun notarytool submit *-CLI.zip --apple-id "$APPLE_ID" --team-id "$TEAM_ID" --password "$APP_PW"
     @echo "Created ./packages/midi-m8-{{version}}-{{target-os}}_{{target-arch}}-CLI.zip"
 
-    rm -r packages/prep/*
+    rm -rf packages/prep/*
     cp -r target/bundled/*.clap packages/prep
-    cd packages/prep && zip -r -9  "../midi-m8-{{version}}-{{target-os}}_{{target-arch}}-CLAP.zip" *
+    cd packages/prep && codesign -s "$DEVELOPER_ID" --deep -v -f -o runtime *
+    cd packages/prep && ditto -c -k . "../midi-m8-{{version}}-{{target-os}}_{{target-arch}}-CLAP.zip"
+    cd packages && xcrun notarytool submit *-CLAP.zip --apple-id "$APPLE_ID" --team-id "$TEAM_ID" --password "$APP_PW"
     @echo "Created ./packages/midi-m8-{{version}}-{{target-os}}_{{target-arch}}-CLAP.zip"
 
-    rm -r packages/prep/*
+    rm -rf packages/prep/*
     cp -r target/bundled/*.vst3 packages/prep
-    cd packages/prep && zip -r -9  "../midi-m8-{{version}}-{{target-os}}_{{target-arch}}-VST3.zip" *
+    cd packages/prep && codesign -s "$DEVELOPER_ID" --deep -v -f -o runtime *
+    cd packages/prep && ditto -c -k . "../midi-m8-{{version}}-{{target-os}}_{{target-arch}}-VST3.zip"
+    cd packages && xcrun notarytool submit *-VST3.zip --apple-id "$APPLE_ID" --team-id "$TEAM_ID" --password "$APP_PW"
     @echo "Created ./packages/midi-m8-{{version}}-{{target-os}}_{{target-arch}}-VST3.zip"
 
-    rm -r packages/prep/*
+    rm -rf packages/prep/*
     cp -r target/release/bundle/osx/*.app packages/prep
-    cd packages/prep && zip -r -9  "../midi-m8-{{version}}-{{target-os}}_{{target-arch}}-STANDALONE.zip" *
+    cd packages/prep && codesign -s "$DEVELOPER_ID" --deep -v -f -o runtime *
+    cd packages/prep && ditto -c -k . "../midi-m8-{{version}}-{{target-os}}_{{target-arch}}-STANDALONE.zip"
+    cd packages && xcrun notarytool submit *-STANDALONE.zip --apple-id "$APPLE_ID" --team-id "$TEAM_ID" --password "$APP_PW"
     @echo "Created ./packages/midi-m8-{{version}}-{{target-os}}_{{target-arch}}-STANDALONE.zip"
 
 
