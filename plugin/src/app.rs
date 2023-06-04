@@ -107,7 +107,7 @@ impl fmt::Debug for AppState {
     }
 }
 
-#[state_component(AppState)]
+#[component(State = "AppState")]
 #[derive(Debug, Default)]
 pub struct M8PlugApp {}
 

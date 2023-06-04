@@ -12,7 +12,7 @@ struct ParamState {
 }
 
 #[derive(Debug)]
-#[state_component(ParamState)]
+#[component(State = "ParamState")]
 pub struct BasicParam<P: Param> {
     param: Arc<P>,
 }
