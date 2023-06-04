@@ -16,24 +16,13 @@ impl Parameters {
 
 impl lemna::Component for Parameters {
     fn view(&self) -> Option<Node> {
-        let label_style = TextStyle {
-            color: MID_GRAY,
-            ..Default::default()
-        };
-
         let labels = node!(
             widgets::Div::new(),
             [size_pct: [Auto, 100], direction: Column]
         )
-        .push(node!(widgets::Text::new(
-            txt!("START"),
-            label_style.clone()
-        )))
-        .push(node!(widgets::Text::new(
-            txt!("MAX LEN"),
-            label_style.clone()
-        )))
-        .push(node!(widgets::Text::new(txt!("TRANSPOSE"), label_style)));
+        .push(node!(widgets::Text::new(txt!("START"))))
+        .push(node!(widgets::Text::new(txt!("MAX LEN"))))
+        .push(node!(widgets::Text::new(txt!("TRANSPOSE"))));
         let params = node!(
             widgets::Div::new(),
             [size_pct: [Auto, 100], direction: Column]

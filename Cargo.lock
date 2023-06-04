@@ -1559,8 +1559,8 @@ checksum = "830d08ce1d1d941e6b30645f1a0eb5643013d835ce3779a5fc208261dbe10f55"
 
 [[package]]
 name = "lemna"
-version = "0.2.1"
-source = "git+https://github.com/AlexCharlton/lemna.git#1e930db6d5211edc81729675bb9ca49fe72feed0"
+version = "0.3.0"
+source = "git+https://github.com/AlexCharlton/lemna.git#ead550e640c1369fbbfef86092ade11ac9ba24d1"
 dependencies = [
  "ab_glyph",
  "ahash 0.3.8",
@@ -1587,8 +1587,8 @@ dependencies = [
 
 [[package]]
 name = "lemna-baseview"
-version = "0.2.0"
-source = "git+https://github.com/AlexCharlton/lemna.git#1e930db6d5211edc81729675bb9ca49fe72feed0"
+version = "0.3.0"
+source = "git+https://github.com/AlexCharlton/lemna.git#ead550e640c1369fbbfef86092ade11ac9ba24d1"
 dependencies = [
  "arboard",
  "baseview",
@@ -1600,18 +1600,19 @@ dependencies = [
 
 [[package]]
 name = "lemna-macros"
-version = "0.2.0"
-source = "git+https://github.com/AlexCharlton/lemna.git#1e930db6d5211edc81729675bb9ca49fe72feed0"
+version = "0.3.0"
+source = "git+https://github.com/AlexCharlton/lemna.git#ead550e640c1369fbbfef86092ade11ac9ba24d1"
 dependencies = [
  "global_counter",
+ "proc-macro2",
  "quote",
  "syn",
 ]
 
 [[package]]
 name = "lemna-nih-plug"
-version = "0.2.0"
-source = "git+https://github.com/AlexCharlton/lemna.git#1e930db6d5211edc81729675bb9ca49fe72feed0"
+version = "0.3.0"
+source = "git+https://github.com/AlexCharlton/lemna.git#ead550e640c1369fbbfef86092ade11ac9ba24d1"
 dependencies = [
  "crossbeam-channel 0.4.4",
  "lemna",

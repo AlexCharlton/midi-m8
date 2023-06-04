@@ -58,14 +58,13 @@ impl Component for AllTracksDragSource {
                     axis_alignment: Center
                 ],
             )
-            .push(node!(widgets::Text::new(
-                txt!(if has_data { "ALL TRACKS" } else { "NO DATA" }),
-                widgets::TextStyle {
-                    h_alignment: HorizontalAlign::Center,
-                    color: if has_data { DARK_GRAY } else { LIGHT_GRAY },
-                    ..widgets::TextStyle::default()
-                }
-            ))),
+            .push(node!(widgets::Text::new(txt!(if has_data {
+                "ALL TRACKS"
+            } else {
+                "NO DATA"
+            }))
+            .style("h_alignment", HorizontalAlign::Center)
+            .style("color", if has_data { DARK_GRAY } else { LIGHT_GRAY }))),
         )
     }
 
@@ -112,14 +111,9 @@ impl Component for TracksDragSource {
                     ]
                 )
                 .push(node!(
-                    widgets::Text::new(
-                        txt!(format!("{}", i + 1)),
-                        widgets::TextStyle {
-                            h_alignment: HorizontalAlign::Left,
-                            color: if has_data { LIGHT_GRAY } else { MID_GRAY },
-                            ..widgets::TextStyle::default()
-                        }
-                    ),
+                    widgets::Text::new(txt!(format!("{}", i + 1)))
+                        .style("h_alignment", HorizontalAlign::Left)
+                        .style("color", if has_data { LIGHT_GRAY } else { MID_GRAY }),
                     [margin: [3]]
                 ))
                 .push(

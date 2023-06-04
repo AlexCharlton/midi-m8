@@ -114,7 +114,21 @@ pub struct M8PlugApp {}
 #[state_component_impl(AppState)]
 impl lemna::Component for M8PlugApp {
     fn init(&mut self) {
-        self.state = Some(AppState::default())
+        set_current_style(style!(
+            Button.text_color = BLUE;
+            Button.background_color = DARK_GRAY;
+            Button.highlight_color = DARK_GRAY;
+            Button.active_color = DARK_GRAY;
+            Button.border_color = BLUE;
+            Button.padding = 1.5;
+
+            ToolTip.text_color = LIGHT_GRAY;
+            ToolTip.background_color = MID_GRAY;
+            ToolTip.border_color = DARK_GRAY;
+
+            Text.color = MID_GRAY;
+        ));
+        self.state = Some(AppState::default());
     }
 
     fn view(&self) -> Option<Node> {
@@ -149,37 +163,14 @@ impl lemna::Component for M8PlugApp {
                     ],
                 )
                 .push(node!(widgets::Button::new(
-                    txt!("?"),
-                    ButtonStyle {
-                        text_color: BLUE,
-                        background_color: DARK_GRAY,
-                        highlight_color: DARK_GRAY,
-                        active_color: DARK_GRAY,
-                        border_color: BLUE,
-                        radius: 20.0,
-                        padding: 1.5,
-                        tool_tip_style: ToolTipStyle {
-                            text_color: LIGHT_GRAY,
-                            background_color: MID_GRAY,
-                            border_color: DARK_GRAY,
-                            ..Default::default()
-                        },
-                        ..Default::default()
-                    },
-                ).tool_tip("Select or drag a M8 song file. Then drag the MIDI data from the desired track or all tracks.\n\nYou can adjust the max note length, the starting song position, and the amount by which to transpose M8 note numbers to turn them into MIDI note numbers (default is 36). Hold shift to fine-tune.".into())))
+                    txt!("?"))
+                            .style("radius", 20.0)
+                            .tool_tip("Select or drag a M8 song file. Then drag the MIDI data from the desired track or all tracks.\n\nYou can adjust the max note length, the starting song position, and the amount by which to transpose M8 note numbers to turn them into MIDI note numbers (default is 36). Hold shift to fine-tune.".into())))
                 .push(node!(
                     widgets::Button::new(
                         txt!(format!("MIDI-M8 V{}", env!("CARGO_PKG_VERSION"))),
-                        ButtonStyle {
-                            text_color: BLUE,
-                            background_color: DARK_GRAY,
-                            highlight_color: DARK_GRAY,
-                            active_color: DARK_GRAY,
-                            border_width: 0.0,
-                            padding: 1.5,
-                            ..Default::default()
-                        },
-                    ).on_click(Box::new(|| msg!(AppMsg::OpenSite))),
+                    ).style("padding", 1.5)
+                     .on_click(Box::new(|| msg!(AppMsg::OpenSite))),
                     [
                         position_type: Absolute,
                         position: [Auto, Auto, Auto, 0.0]

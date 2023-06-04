@@ -40,15 +40,13 @@ impl<P: Param> BasicParam<P> {
 #[state_component_impl(ParamState)]
 impl<P: Param> lemna::Component for BasicParam<P> {
     fn view(&self) -> Option<Node> {
-        Some(node!(widgets::Text::new(
-            txt!(self
-                .param
-                .normalized_value_to_string(self.param.modulated_normalized_value(), false)),
-            TextStyle {
-                color: LIGHT_GRAY,
-                ..Default::default()
-            }
-        )))
+        Some(node!(widgets::Text::new(txt!(self
+            .param
+            .normalized_value_to_string(
+                self.param.modulated_normalized_value(),
+                false
+            )),)
+        .style("color", LIGHT_GRAY)))
     }
 
     fn on_mouse_motion(&mut self, event: &mut event::Event<event::MouseMotion>) {
