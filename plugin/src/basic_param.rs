@@ -26,6 +26,7 @@ impl<P: Param> BasicParam<P> {
                 last_drag_position: None,
                 raw_norm_value: param.modulated_normalized_value(),
             }),
+            dirty: false,
             param,
         }
     }

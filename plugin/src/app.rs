@@ -187,7 +187,6 @@ impl lemna::Component for M8PlugApp {
                 if let Err(e) = self.update_song() {
                     self.state_mut().error = Some(e.to_string())
                 }
-                event.dirty();
             }
             _ => (),
         }
