@@ -12,7 +12,7 @@ jobs:
       - name: Setup | Checkout
         uses: actions/checkout@v3
       - name: Install deps
-        run: sudo apt-get install -y libxcursor-dev libasound2-dev libjack-dev libx11-xcb-dev libxcb-dri2-0-dev libxcb-icccm4-dev
+        run: sudo apt-get install -y libxcursor-dev libasound2-dev libjack-dev libx11-xcb-dev libxcb-dri2-0-dev libxcb-icccm4-dev libxcb-ewmh-dev
       - name: Setup | Rust
         uses: actions-rs/toolchain@v1
         with:
