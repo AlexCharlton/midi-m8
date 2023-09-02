@@ -30,7 +30,7 @@ _build_plugin:
 
 [linux]
 _build_plugin:
-    @echo "Plugin not (yet) supported on Linux"
+    cargo xtask bundle -p midi-m8-plugin --release
 
 package-dir:
     rm -rf packages/prep
@@ -39,11 +39,27 @@ package-dir:
 package: build build_plugin package-dir
     just _package `./target/release/{{output-filename}} --version | awk '{print $2}'`
 
+
 [linux]
 _package version:
     cp target/release/{{output-filename}} packages/prep
     cd packages/prep && tar cv * | gzip -9 > "../midi-m8-{{version}}-{{target-os}}_{{target-arch}}-CLI.tgz"
     @echo "Created ./packages/midi-m8-{{version}}-{{target-os}}_{{target-arch}}-CLI.tgz"
+
+    rm -r packages/prep/*
+    cp -r target/bundled/*.clap packages/prep
+    cd packages/prep && tar cv * | gzip -9 > "../midi-m8-{{version}}-{{target-os}}_{{target-arch}}-CLAP.tgz"
+    @echo "Created ./packages/midi-m8-{{version}}-{{target-os}}_{{target-arch}}-CLAP.tgz"
+
+    rm -r packages/prep/*
+    cp -r target/bundled/*.vst3 packages/prep
+    cd packages/prep && tar cv * | gzip -9 > "../midi-m8-{{version}}-{{target-os}}_{{target-arch}}-VST3.tgz"
+    @echo "Created ./packages/midi-m8-{{version}}-{{target-os}}_{{target-arch}}-VST3.tgz"
+
+    rm -r packages/prep/*
+    cp target/release/midi-m8-plugin packages/prep/midi-m8
+    cd packages/prep && tar cv * | gzip -9 > "../midi-m8-{{version}}-{{target-os}}_{{target-arch}}-STANDALONE.tgz"
+    @echo "Created ./packages/midi-m8-{{version}}-{{target-os}}_{{target-arch}}-STANDALONE.tgz"
 
 
 [macos]
