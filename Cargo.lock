@@ -1552,7 +1552,7 @@ checksum = "830d08ce1d1d941e6b30645f1a0eb5643013d835ce3779a5fc208261dbe10f55"
 [[package]]
 name = "lemna"
 version = "0.4.0"
-source = "git+https://github.com/AlexCharlton/lemna.git#03205cbdf8cd43f9341be616b853be07aa234838"
+source = "git+https://github.com/AlexCharlton/lemna.git#08190e3d84e0edfd2ab16a892c9db6564f2b0791"
 dependencies = [
  "ab_glyph",
  "ahash 0.3.8",
@@ -1580,7 +1580,7 @@ dependencies = [
 [[package]]
 name = "lemna-baseview"
 version = "0.4.0"
-source = "git+https://github.com/AlexCharlton/lemna.git#03205cbdf8cd43f9341be616b853be07aa234838"
+source = "git+https://github.com/AlexCharlton/lemna.git#08190e3d84e0edfd2ab16a892c9db6564f2b0791"
 dependencies = [
  "arboard",
  "baseview",
@@ -1593,7 +1593,7 @@ dependencies = [
 [[package]]
 name = "lemna-macros"
 version = "0.4.0"
-source = "git+https://github.com/AlexCharlton/lemna.git#03205cbdf8cd43f9341be616b853be07aa234838"
+source = "git+https://github.com/AlexCharlton/lemna.git#08190e3d84e0edfd2ab16a892c9db6564f2b0791"
 dependencies = [
  "global_counter",
  "proc-macro2",
@@ -1604,8 +1604,9 @@ dependencies = [
 [[package]]
 name = "lemna-nih-plug"
 version = "0.3.0"
-source = "git+https://github.com/AlexCharlton/lemna.git#03205cbdf8cd43f9341be616b853be07aa234838"
+source = "git+https://github.com/AlexCharlton/lemna.git#08190e3d84e0edfd2ab16a892c9db6564f2b0791"
 dependencies = [
+ "baseview",
  "crossbeam-channel 0.4.4",
  "lemna",
  "lemna-baseview",
@@ -1830,7 +1831,7 @@ checksum = "6f2dd5c7f8aaf48a76e389068ab25ed80bdbc226b887f9013844c415698c9952"
 
 [[package]]
 name = "midi-m8"
-version = "1.3.0"
+version = "1.3.1"
 dependencies = [
  "clap",
  "human-panic",
@@ -1849,7 +1850,7 @@ dependencies = [
 
 [[package]]
 name = "midi-m8-plugin"
-version = "1.3.0"
+version = "1.3.1"
 dependencies = [
  "lemna",
  "lemna-nih-plug",
@@ -1981,7 +1982,7 @@ dependencies = [
 [[package]]
 name = "nih_plug"
 version = "0.0.0"
-source = "git+https://github.com/AlexCharlton/nih-plug.git#3f7fde82ca391201920673790d0e9da954c57071"
+source = "git+https://github.com/AlexCharlton/nih-plug.git#aa3042ebf254dc60b3825a16d6ac4c09be1b5885"
 dependencies = [
  "anyhow",
  "anymap",
@@ -2018,7 +2019,7 @@ dependencies = [
 [[package]]
 name = "nih_plug_derive"
 version = "0.1.0"
-source = "git+https://github.com/AlexCharlton/nih-plug.git#3f7fde82ca391201920673790d0e9da954c57071"
+source = "git+https://github.com/AlexCharlton/nih-plug.git#aa3042ebf254dc60b3825a16d6ac4c09be1b5885"
 dependencies = [
  "proc-macro2",
  "quote",
@@ -3294,7 +3295,7 @@ dependencies = [
  "js-sys",
  "log",
  "naga",
- "parking_lot 0.11.2",
+ "parking_lot 0.12.1",
  "profiling",
  "raw-window-handle",
  "smallvec",
@@ -3319,7 +3320,7 @@ dependencies = [
  "codespan-reporting",
  "log",
  "naga",
- "parking_lot 0.11.2",
+ "parking_lot 0.12.1",
  "profiling",
  "raw-window-handle",
  "rustc-hash",
@@ -3358,7 +3359,7 @@ dependencies = [
  "metal",
  "naga",
  "objc",
- "parking_lot 0.11.2",
+ "parking_lot 0.12.1",
  "profiling",
  "range-alloc",
  "raw-window-handle",

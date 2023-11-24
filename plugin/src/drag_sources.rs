@@ -1,7 +1,7 @@
 use std::sync::Arc;
 
 use crate::app::*;
-use lemna::{self, widgets, *};
+use lemna::{self, style::HorizontalPosition, widgets, *};
 
 #[derive(Debug)]
 pub struct DragSources {
@@ -63,7 +63,7 @@ impl Component for AllTracksDragSource {
             } else {
                 "NO DATA"
             }))
-            .style("h_alignment", HorizontalAlign::Center)
+            .style("h_alignment", HorizontalPosition::Center)
             .style("color", if has_data { DARK_GRAY } else { LIGHT_GRAY }))),
         )
     }
@@ -112,7 +112,7 @@ impl Component for TracksDragSource {
                 )
                 .push(node!(
                     widgets::Text::new(txt!(format!("{}", i + 1)))
-                        .style("h_alignment", HorizontalAlign::Left)
+                        .style("h_alignment", HorizontalPosition::Left)
                         .style("color", if has_data { LIGHT_GRAY } else { MID_GRAY }),
                     [margin: [3]]
                 ))

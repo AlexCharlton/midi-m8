@@ -158,7 +158,7 @@ impl lemna::Component for M8PlugApp {
                 node!(
                     widgets::Div::new(),
                     [size: [Auto, 30],
-                     direction: Direction::Row,
+                     direction: Row,
                      padding: [5],
                     ],
                 )
